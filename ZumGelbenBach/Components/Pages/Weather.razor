@@ -1,11 +1,9 @@
 ﻿@page "/weather"
 @attribute [StreamRendering]
 
-<PageTitle>Weather</PageTitle>
+<PageTitle>Zubereiten</PageTitle>
 
-<h1>Weather</h1>
-
-<p>This component demonstrates showing data.</p>
+<h1>Zubereitung:</h1>
 
 @if (forecasts == null)
 {
@@ -16,10 +14,9 @@ else
     <table class="table">
         <thead>
             <tr>
-                <th>Date</th>
-                <th>Temp. (C)</th>
-                <th>Temp. (F)</th>
-                <th>Summary</th>
+                <th>Menu</th>
+                <th>Wünsche</th>
+                <th>Anazhl</th>                
             </tr>
         </thead>
         <tbody>
