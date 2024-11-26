@@ -13,19 +13,19 @@
 {
     @foreach (var item in menuItems)
     {
-        <div id=@item["Benutzer_ID"].ToString() class="menu-item">
+        <div id=@item["Bezeichnung"].ToString() class="menu-item">
 
             <div style="float:right;width:100px;">
                 <img src="~/favicon.png" alt="Menu Image" />
             </div>
 
             <div style="margin:0 auto;width:100px;">
-                <h3>@item["Name"].ToString()</h3>
+                <h4>@item["Bezeichnung"].ToString()</h4>
             </div>
 
             <div>
-                <input id="quantity_@item["Benutzer_ID"].ToString()" type="number" placeholder="Quantity" />
-                <input id="select_@item["Benutzer_ID"].ToString()" type="checkbox" />
+                <input id="quantity_@item["Bezeichnung"].ToString()" type="number" placeholder="Quantity" style="transform: scale(0.75)" /> <!-- Bitte noch machen: Wenn value gesetzt hier, dann checkbox füllen.-->
+                <input id="select_@item["Bezeichnung"].ToString()" type="checkbox" style="transform: scale(1.5)"/> <!-- Wenn checkbox aktiviert wird, dann Oben value auf 1 setzen. Wenn deaktiviert wird, dann oben value löschen-->
             </div>
         </div>
         <br />
@@ -55,7 +55,7 @@ else
             DBConnector dB = new DBConnector();
 
             // Daten abrufen (z. B. Spalten Benutzer_ID, Name, Preis)
-            var reader = dB.ReadData("Benutzer", new[] { "Benutzer_ID", "Vorname" });
+            var reader = dB.ReadData("Menue", new[] { "Bezeichnung", "Beschreibung", "Preis", "Größe" });
 
             menuItems.Clear(); // Alte Daten entfernen
 
@@ -63,8 +63,10 @@ else
             {
                 var row = new Dictionary<string, object>
                 {
-                    { "Benutzer_ID", reader["Benutzer_ID"] },
-                    { "Name", reader["Vorname"] }                    
+                    { "Bezeichnung", reader["Bezeichnung"] },
+                    { "Beschreibung", reader["Beschreibung"] },
+                    { "Preis", reader["Preis"] },
+                    { "Größe", reader["Größe"] }
                 };
 
                 menuItems.Add(row);
