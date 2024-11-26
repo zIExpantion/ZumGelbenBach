@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 using System.Windows.Markup;
 using System.Data;
 using Microsoft.Data.Sqlite;
-using SQLitePCL; // Für Batteries.Init()
+using SQLitePCL;
+using System.Diagnostics; // Für Batteries.Init()
 
 namespace ZumGelbenBach
 {
@@ -118,7 +119,40 @@ namespace ZumGelbenBach
             }
         }
 
-        //insert 
+
+        /// <summary>
+        /// Ausführen eines SQL-Befehls 
+        /// </summary>
+        /// <param name="sqlCommand"></param>
+        /// <returns>Falls select als befehlt ausgeführt werden soll dann wird ein reader returned </returns>
+        public SqliteDataReader ExecuteCommand(string sqlCommand)
+        {
+            try
+            {
+                using (SqliteCommand cmd = new SqliteCommand(sqlCommand, conn))
+                {
+                    if (sqlCommand.Trim().StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return cmd.ExecuteReader();
+                    }
+                    else
+                    {
+                        cmd.ExecuteNonQuery();
+                        return null;
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Fehler in Methode: {new StackTrace().GetFrame(0).GetMethod().Name}" + " Fehlermeldung: {ex.Message}");
+                return null;
+            }
+        }
+
+
+        
+        //INSERET      
         public void SaveData(String table, String[] columns, List<String> values, List<int> type)
         {
             //INT von Dictionary:
