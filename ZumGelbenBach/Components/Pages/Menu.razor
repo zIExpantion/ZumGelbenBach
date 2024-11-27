@@ -64,7 +64,7 @@ else
             DBConnector dB = new DBConnector();
 
             // Daten abrufen (z. B. Spalten Benutzer_ID, Name, Preis)
-            var reader = dB.ReadDataJoin("Menue", new[] { "Menue_ID", "Bezeichnung", "Beschreibung", "Preis", "Größe", "Images.Photo"}, "Menue_ID", "Images", "ImgID");
+            var reader = dB.ReadMenuWithImages("Menue", new[] { "Menue_ID", "Bezeichnung", "Beschreibung", "Preis", "Größe", "Images.Photo" }, "Image", "Images", "ImgID");
 
             menuItems.Clear(); // Alte Daten entfernen
 

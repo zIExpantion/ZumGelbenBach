@@ -121,7 +121,7 @@ namespace ZumGelbenBach
 
 
 
-        public SqliteDataReader ReadDataJoin(String table, String[] columns, string tableIdColumn, String joinTable, String joinTableIdColumn)
+        public SqliteDataReader ReadMenuWithImages(String table, String[] columns, string tableIdColumn, String joinTable, String joinTableIdColumn)
         {
             SqliteCommand cmd = conn.CreateCommand();
             cmd.Connection = conn;
