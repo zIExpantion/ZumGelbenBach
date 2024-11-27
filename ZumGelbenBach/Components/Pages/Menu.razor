@@ -34,8 +34,20 @@
             </div>
 
             <div>
-                <input id="quantity_@item["Bezeichnung"].ToString()" type="number" placeholder="Quantity" @bind="menuItemStates[itemId].Quantity" style="transform: scale(0.75)" /> <!-- Bitte noch machen: Wenn value gesetzt hier, dann checkbox füllen.-->
-                <input id="select_@item["Bezeichnung"].ToString()" type="checkbox" @bind="menuItemStates[itemId].IsSelected" style="transform: scale(1.5)" /> <!-- Wenn checkbox aktiviert wird, dann Oben value auf 1 setzen. Wenn deaktiviert wird, dann oben value löschen-->
+                <input id="quantity_@item["Bezeichnung"].ToString()"
+                type="number"
+                placeholder="Quantity"
+                value="@menuItemStates[itemId].Quantity"
+                @oninput="e => OnQuantityChange(itemId, e.Value)"
+                style="transform: scale(0.75)" />
+
+                <input id="select_@item["Bezeichnung"].ToString()"
+                type="checkbox"
+                checked="@menuItemStates[itemId].IsSelected"
+                @onchange="e => OnCheckboxChange(itemId, e.Value)"
+                style="transform: scale(1.5)" />
+
+
             </div>
         </div>
         <br />
@@ -101,7 +113,7 @@ else
                 };
 
                 menuItems.Add(row);
-                
+
                 var itemId = row["Bezeichnung"].ToString() + row["Menue_ID"].ToString();
                 menuItemStates[itemId] = new MenuItemState
                     {
@@ -154,4 +166,49 @@ else
     {
         sdS.ClearItems();
     }
+
+
+    private void OnCheckboxChange(string itemId, object value)
+    {
+        // Parse den neuen Wert als bool
+        bool isChecked = value is bool boolean && boolean;
+
+        // Update den Zustand
+        menuItemStates[itemId].IsSelected = isChecked;
+
+        //cb true Quantity auf 1 setzen
+        if (isChecked && menuItemStates[itemId].Quantity == 0)
+        {
+            menuItemStates[itemId].Quantity = 1;
+        }
+        //wenn cb unchecked quantity = 0
+        else if (!isChecked)
+        {
+            menuItemStates[itemId].Quantity = 0;
+        }
+
+        StateHasChanged(); 
+    }
+
+
+
+    /// <summary>
+    ///     Aktualisiert die UI
+    /// </summary>
+    /// <param name="itemId"></param>
+    /// <param name="value"></param>
+    private void OnQuantityChange(string itemId, object value)
+    {
+        //Zahlenwert speichern 
+        int quantity = int.TryParse(value.ToString(), out var result) ? result : 0;
+
+        // Update vom Zustand
+        menuItemStates[itemId].Quantity = quantity;
+
+        //cb setzten wenn qualtity > 0 
+        menuItemStates[itemId].IsSelected = quantity > 0;
+
+        StateHasChanged(); 
+    }
+
 }
