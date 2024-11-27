@@ -9,7 +9,7 @@ def convertToBinaryData(filename):
 
 def insertBLOB(empId, photo):
     try:
-        sqliteConnection = sqlite3.connect("C:\\Users\\vince\\Documents\\GitHub\\FlyCheckBook BugFixing Saving to DB\\ZumGelbenBach\\ZumGelbenBach\\wwwroot\\Datenbank\\Produktdb.db")
+        sqliteConnection = sqlite3.connect("ZumGelbenBach/wwwroot/Datenbank/Produktdb.db")
         cursor = sqliteConnection.cursor()
         print("Connected to SQLite")
         sqlite_insert_blob_query = """ INSERT INTO Images
@@ -32,8 +32,8 @@ def insertBLOB(empId, photo):
 
 
 
-image = "1.jpg"
+image = "4.jpg"
 filepath = os.getcwd() + "\\Tools\\" + image
 
 convertToBinaryData(filepath)
-insertBLOB(1, filepath)
+insertBLOB(5, filepath)
