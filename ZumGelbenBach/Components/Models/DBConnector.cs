@@ -120,6 +120,32 @@ namespace ZumGelbenBach
         }
 
 
+
+        public SqliteDataReader ReadDataJoin(String table, String[] columns, string tableIdColumn, String joinTable, String joinTableIdColumn)
+        {
+            SqliteCommand cmd = conn.CreateCommand();
+            cmd.Connection = conn;
+            String columnsString;
+
+            if (columns.Length > 1)
+            {
+                columnsString = String.Join(", ", columns);
+            }
+            else
+            {
+                columnsString = columns[0];
+            }
+
+            String commString = String.Format(@$"Select {columnsString} FROM {table} left join {joinTable} on {table}.{tableIdColumn} = {joinTable}.{joinTableIdColumn}");
+
+            cmd.CommandText = commString;
+            //cmd.ExecuteReader();
+            return cmd.ExecuteReader();
+        }
+
+
+
+
         /// <summary>
         /// Ausführen eines SQL-Befehls 
         /// </summary>

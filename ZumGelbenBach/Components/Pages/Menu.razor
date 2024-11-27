@@ -16,11 +16,12 @@
         <div id=@item["Bezeichnung"].ToString() class="menu-item">
 
             <div style="float:right;width:100px;">
-                <img src="~/favicon.png" alt="Menu Image" />
+                 <img src=@item["Image"].ToString() alt="Menu Image" /> 
             </div>
 
-            <div style="margin:0 auto;width:100px;">
+            <div style="margin:0 auto;width:300px;">
                 <h4>@item["Bezeichnung"].ToString()</h4>
+                 <h5>@item["Beschreibung"].ToString()</h5>
             </div>
 
             <div>
@@ -28,7 +29,7 @@
                 <input id="select_@item["Bezeichnung"].ToString()" type="checkbox" style="transform: scale(1.5)"/> <!-- Wenn checkbox aktiviert wird, dann Oben value auf 1 setzen. Wenn deaktiviert wird, dann oben value löschen-->
             </div>
         </div>
-        <br />
+		<br />
     }
 }
 else
@@ -55,20 +56,31 @@ else
             DBConnector dB = new DBConnector();
 
             // Daten abrufen (z. B. Spalten Benutzer_ID, Name, Preis)
-            var reader = dB.ReadData("Menue", new[] { "Bezeichnung", "Beschreibung", "Preis", "Größe" });
+            var reader = dB.ReadDataJoin("Menue", new[] { "Menue_ID", "Bezeichnung", "Beschreibung", "Preis", "Größe", "Images.Photo"}, "Menue_ID", "Images", "ImgID");
 
             menuItems.Clear(); // Alte Daten entfernen
 
             while (reader.Read())
             {
+
+                string base64Image = string.Empty;
+                if (DBConnector.HasColumn(reader, "Photo") && reader["Photo"] != DBNull.Value)
+                {
+                    var imageBytes = (byte[])reader["Photo"];
+                    base64Image = $"data:image/jpeg;base64,{Convert.ToBase64String(imageBytes)}";
+                }
+
+
+
                 var row = new Dictionary<string, object>
                 {
                     { "Bezeichnung", reader["Bezeichnung"] },
                     { "Beschreibung", reader["Beschreibung"] },
                     { "Preis", reader["Preis"] },
                     { "Größe", reader["Größe"] }
+                    , { "Image", base64Image }
                 };
-
+             
                 menuItems.Add(row);
             }
         }
@@ -76,5 +88,6 @@ else
         {
             Console.WriteLine($"Error loading data: {ex.Message}");
         }
+        
     }
 }
