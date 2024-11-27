@@ -1,6 +1,7 @@
 ﻿@page "/menu"
 @rendermode InteractiveServer
 @using ZumGelbenBach;
+@using ZumGelbenBach.Components.Models
 
 <PageTitle>menu</PageTitle>
 <link href="~/app.css" rel="stylesheet" />
@@ -11,11 +12,17 @@
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 <button class="btn btn-primary" @onclick="GetData">Load Menu</button>
 
+
+
 @if (menuItems != null && menuItems.Any())
 {
     @foreach (var item in menuItems)
     {
-        <div id=@item["Bezeichnung"].ToString() class="menu-item">
+        var itemId = item["Bezeichnung"].ToString() + item["Menue_ID"].ToString();
+        <div id="@itemId" class="menu-item">
+
+
+            <!--<div id=@item["Bezeichnung"].ToString() class="menu-item">-->
 
             <div style="float:right;width:100px;">
                 <img src=@item["Image"].ToString() alt="Menu Image" width="100%" height="100%" /> 
@@ -27,14 +34,14 @@
             </div>
 
             <div>
-                <input id="quantity_@item["Bezeichnung"].ToString()" type="number" placeholder="Quantity" style="transform: scale(0.75)" /> <!-- Bitte noch machen: Wenn value gesetzt hier, dann checkbox füllen.-->
-                <input id="select_@item["Bezeichnung"].ToString()" type="checkbox" style="transform: scale(1.5)"/> <!-- Wenn checkbox aktiviert wird, dann Oben value auf 1 setzen. Wenn deaktiviert wird, dann oben value löschen-->
+                <input id="quantity_@item["Bezeichnung"].ToString()" type="number" placeholder="Quantity" @bind="menuItemStates[itemId].Quantity" style="transform: scale(0.75)" /> <!-- Bitte noch machen: Wenn value gesetzt hier, dann checkbox füllen.-->
+                <input id="select_@item["Bezeichnung"].ToString()" type="checkbox" @bind="menuItemStates[itemId].IsSelected" style="transform: scale(1.5)" /> <!-- Wenn checkbox aktiviert wird, dann Oben value auf 1 setzen. Wenn deaktiviert wird, dann oben value löschen-->
             </div>
         </div>
         <br />
     }
 
-    <button class="btn btn-primary" @onclick="SubmitOrder">Zu Bestellung hinzufügen</button>
+    <button class="btn btn-primary" style=" background-color: @(!IsAnyItemSelected() ? "#404040" : "#007bff"); color: white;" @onclick="SubmitOrder" disabled="@(!IsAnyItemSelected())">Zu Bestellung hinzufügen</button>
 
 }
 else
@@ -43,6 +50,12 @@ else
 }
 
 @code {
+
+    [Inject] private IJSRuntime JSRuntime { get; set; }
+    [Inject] private SessionDataService sdS { get; set; }
+    private Dictionary<string, MenuItemState> menuItemStates = new Dictionary<string, MenuItemState>();
+
+
     private int currentCount = 0;
     private int _quantity { get; set; }
     private bool _isChecked;
@@ -63,10 +76,9 @@ else
             // DBConnector initialisieren
             DBConnector dB = new DBConnector();
 
-            // Daten abrufen (z. B. Spalten Benutzer_ID, Name, Preis)
             var reader = dB.ReadMenuWithImages("Menue", new[] { "Menue_ID", "Bezeichnung", "Beschreibung", "Preis", "Größe", "Images.Photo" }, "Image", "Images", "ImgID");
 
-            menuItems.Clear(); // Alte Daten entfernen
+            menuItems.Clear(); 
 
             while (reader.Read())
             {
@@ -83,11 +95,19 @@ else
                     { "Bezeichnung", reader["Bezeichnung"] },
                     { "Beschreibung", reader["Beschreibung"] },
                     { "Preis", reader["Preis"] },
-                    { "Größe", reader["Größe"] }
-                    , { "Image", base64Image }
+                    { "Größe", reader["Größe"] }, 
+                    { "Image", base64Image },
+                    {"Menue_ID", reader["Menue_ID"]}
                 };
 
                 menuItems.Add(row);
+                
+                var itemId = row["Bezeichnung"].ToString() + row["Menue_ID"].ToString();
+                menuItemStates[itemId] = new MenuItemState
+                    {
+                        Quantity = 0,
+                        IsSelected = false 
+                    };
             }
         }
         catch (Exception ex)
@@ -96,8 +116,42 @@ else
         }
     }
 
-    private void SubmitOrder()
+    private bool IsAnyItemSelected()
     {
+        return menuItemStates.Values.Any(state => state.IsSelected && state.Quantity > 0);
+    }
 
+
+    private async  Task SubmitOrder()
+    {
+        var selectedItems = menuItemStates
+           .Where(x => x.Value.IsSelected && x.Value.Quantity > 0)
+           .Select(x => new { ItemName = x.Key, Quantity = x.Value.Quantity })
+           .ToList();
+
+        foreach (var selectedItem in selectedItems)
+        {
+            Console.WriteLine($"Item: {selectedItem.ItemName}, Quantity: {selectedItem.Quantity}");
+        }
+
+        foreach (var key in menuItemStates.Keys.ToList())
+        {
+            menuItemStates[key].Quantity = 0;
+            menuItemStates[key].IsSelected = false;
+        }
+
+        await JSRuntime.InvokeVoidAsync("confirm", "Bestellung ergänzt");
+
+    }
+
+
+    private void AddItemToSession()
+    {
+        sdS.AddItem("New Item " + (sdS.Items.Count + 1));
+    }
+
+    private void ClearItems()
+    {
+        sdS.ClearItems();
     }
 }

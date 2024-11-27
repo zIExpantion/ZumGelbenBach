@@ -31,7 +31,6 @@ namespace ZumGelbenBach
         {
             SqliteConnection conn;
             
-
             String connString = String.Format("Data Source={0}", dbPath);
             conn = new SqliteConnection(connString);
 
