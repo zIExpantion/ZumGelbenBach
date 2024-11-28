@@ -159,7 +159,9 @@ else
 
     private void AddItemToSession()
     {
-        sdS.AddItem("New Item " + (sdS.Items.Count + 1));
+        // Beispiel: Füge ein neues Item mit einer eindeutigen ID zur Session hinzu
+        string newItemId = "New Item " + (menuItemStates.Count + 1);  // oder eine andere Logik für eine ID
+        sdS.AddOrUpdateMenuItem(newItemId, 1, "Neues Produkt");
     }
 
     private void ClearItems()
