@@ -29,8 +29,11 @@
                 <img src=@item["Image"].ToString() alt="Menu Image" width="auto" height="100%" style="object-fit: cover;" />
             </div>
 
-            <div style="margin:0 auto;width:300px; order: 2;">
-                <h4>@item["Bezeichnung"].ToString()</h4>
+            <div style="margin:0 auto;width:auto; flex-grow: 1; flex-direction: column; order: 2; padding-left: 50px; padding-right: 30px;">
+                <div style="margin: 0 auto; width: auto; display: flex; justify-content: space-between; align-items: center;">
+                    <h4 style="margin: 0;">@item["Bezeichnung"].ToString()</h4>
+                    <p style="text-align: right; margin: 0;"><b>@item["Preis"] €</b></p>
+                </div>
                 <p style="font-style:italic;">&nbsp;&nbsp;&nbsp;&nbsp; @item["Beschreibung"].ToString()</p>
             </div>
 
