@@ -1,4 +1,5 @@
 using ZumGelbenBach.Components;
+using ZumGelbenBach.Components.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,7 +9,7 @@ builder.Services.AddScoped<SessionDataService>();
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
-
+builder.Services.AddScoped<SessionDataService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
