@@ -1,6 +1,6 @@
 ﻿namespace ZumGelbenBach.Components.Models
 {
-    public class SessionDataService
+    public class SessionDataServiceX
     {
         private Dictionary<string, MenuItemState> _menuItemStates = new();
 
