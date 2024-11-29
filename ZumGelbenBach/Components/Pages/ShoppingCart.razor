@@ -1,0 +1,76 @@
+﻿@page "/warenkorb"
+@using ZumGelbenBach.Components.Models
+@inject SessionDataService sdS
+
+<h3>Warenkorb</h3>
+
+@if (menuItemStates == null || !menuItemStates.Any(x => x.Value.IsSelected))
+{
+    <p>Ihr Warenkorb ist leer.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Produkt</th>
+                <th>Beschreibung</th>
+                <th>Anzahl</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in menuItemStates.Where(x => x.Value.IsSelected))
+            {
+                <tr>
+                    <td>@item.Key</td>
+                    <td>
+                        <input type="text"
+                               value="@item.Value.sProdukt"
+                               @oninput="e => OnDescriptionChange(item.Key, e.Value)" />
+                    </td>
+                    <td>
+                        <input type="number"
+                               min="1"
+                               value="@item.Value.Quantity"
+                               @oninput="e => OnQuantityChange(item.Key, e.Value)" />
+                    </td>
+                    <td>
+                        <button class="btn btn-danger" @onclick="() => RemoveFromCart(item.Key)">Entfernen</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <p><strong>Gesamtsumme der Artikel: </strong>@menuItemStates.Values.Where(x => x.IsSelected).Sum(item => item.Quantity)</p>
+}
+
+@code {
+    private Dictionary<string, MenuItemState> menuItemStates = new Dictionary<string, MenuItemState>();
+
+    protected override void OnInitialized()
+    {
+        // Zustände aus der Session abrufen
+        menuItemStates = sdS.GetMenuItemStates();
+    }
+
+    private void OnQuantityChange(string itemId, object value)
+    {
+        int quantity = int.TryParse(value.ToString(), out var result) ? result : 1;
+        sdS.AddOrUpdateMenuItem(itemId, quantity, itemId); // Menge aktualisieren
+        StateHasChanged();
+    }
+
+    private void OnDescriptionChange(string itemId, object value)
+    {
+        sdS.AddOrUpdateMenuItem(itemId, menuItemStates[itemId].Quantity, value?.ToString()); // Beschreibung aktualisieren
+        StateHasChanged();
+    }
+
+    private void RemoveFromCart(string itemId)
+    {
+        sdS.RemoveItem(itemId);  // Artikel aus der Session entfernen
+        StateHasChanged();
+    }
+}
