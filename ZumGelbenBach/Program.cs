@@ -9,7 +9,7 @@ builder.Services.AddScoped<SessionDataService>();
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
-builder.Services.AddScoped<SessionDataService>();
+builder.Services.AddSingleton<SessionDataService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

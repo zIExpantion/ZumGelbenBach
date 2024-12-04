@@ -2,7 +2,13 @@
 {
     public class SessionDataService
     {
-        private Dictionary<string, MenuItemState> _menuItemStates = new();
+        public Dictionary<string, MenuItemState> _menuItemStates;
+
+
+        public SessionDataService()
+        {
+            _menuItemStates = new Dictionary<string, MenuItemState>();
+        }
 
         // Gibt die Menü-Item-Zustände zurück
         public Dictionary<string, MenuItemState> GetMenuItemStates()

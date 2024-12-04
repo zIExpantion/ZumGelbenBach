@@ -139,51 +139,51 @@ else
 
 
 
-             /* private void GetData()
-             {
-             try
-             {
-             // DBConnector initialisieren
-             DBConnector dB = new DBConnector();
+            /* private void GetData()
+        {
+        try
+            {
+            // DBConnector initialisieren
+            DBConnector dB = new DBConnector();
 
-             var reader = dB.ReadMenuWithImages("Menue", new[] { "Menue_ID", "Bezeichnung", "Beschreibung", "Preis", "Größe", "Images.Photo" }, "Image", "Images", "ImgID");
+    var reader = dB.ReadMenuWithImages("Menue", new[] { "Menue_ID", "Bezeichnung", "Beschreibung", "Preis", "Größe", "Images.Photo" }, "Image", "Images", "ImgID");
 
-                 menuItems.Clear(); 
+    menuItems.Clear(); 
 
-                 while (reader.Read())
-                 {
+    while (reader.Read())
+    {
 
-                 string base64Image = string.Empty;
-                     if (DBConnector.HasColumn(reader, "Photo") && reader["Photo"] != DBNull.Value)
-                     {
-                     var imageBytes = (byte[])reader["Photo"];
-                 base64Image = $"data:image/jpeg;base64,{Convert.ToBase64String(imageBytes)}";
-                     }
+    string base64Image = string.Empty;
+        if (DBConnector.HasColumn(reader, "Photo") && reader["Photo"] != DBNull.Value)
+        {
+            var imageBytes = (byte[])reader["Photo"];
+            base64Image = $"data:image/jpeg;base64,{Convert.ToBase64String(imageBytes)}";
+            }
 
-                     var row = new Dictionary<string, object>
-                     {
-                     { "Bezeichnung", reader["Bezeichnung"] },
-                     { "Beschreibung", reader["Beschreibung"] },
-                     { "Preis", reader["Preis"] },
-                     { "Größe", reader["Größe"] }, 
-                     { "Image", base64Image },
-                 {"Menue_ID", reader["Menue_ID"]}
-                 };
+        var row = new Dictionary<string, object>
+        {
+            { "Bezeichnung", reader["Bezeichnung"] },
+            { "Beschreibung", reader["Beschreibung"] },
+            { "Preis", reader["Preis"] },
+            { "Größe", reader["Größe"] }, 
+            { "Image", base64Image },
+            {"Menue_ID", reader["Menue_ID"]}
+            };
 
-                 menuItems.Add(row);
+        menuItems.Add(row);
 
-                 var itemId = row["Bezeichnung"].ToString() + row["Menue_ID"].ToString();
-                     menuItemStates[itemId] = new MenuItemState
-                         {
-                         Quantity = 0,
-                     IsSelected = false 
-         };
-         }
-         }
+        var itemId = row["Bezeichnung"].ToString() + row["Menue_ID"].ToString();
+        menuItemStates[itemId] = new MenuItemState
+            {
+                Quantity = 0,
+                IsSelected = false 
+            };
+            }
+            }
          catch (Exception ex)
              {
-             Console.WriteLine($"Error loading data: {ex.Message}");
-     }
+    Console.WriteLine($"Error loading data: {ex.Message}");
+    }
      } */
 
     private bool IsAnyItemSelected()
@@ -192,29 +192,42 @@ else
     }
 
 
-    private async  Task SubmitOrder()
+    private async Task SubmitOrder()
     {
+        // Holen Sie sich alle ausgewählten und nicht-leeren Menüitems
         var selectedItems = menuItemStates
-           .Where(x => x.Value.IsSelected && x.Value.Quantity > 0)
-           .Select(x => new { ItemName = x.Key, Quantity = x.Value.Quantity })
-           .ToList();
+            .Where(x => x.Value.IsSelected && x.Value.Quantity > 0)
+            .Select(x => new { ItemName = x.Key, Quantity = x.Value.Quantity })
+            .ToList();
 
+        // Füge alle ausgewählten Artikel zur Session hinzu
         foreach (var selectedItem in selectedItems)
         {
+            // Hier fügen wir die ausgewählten Artikel in die Session ein (SessionDataService)
             AddItemToSession(selectedItem.ItemName, selectedItem.Quantity, selectedItem.ItemName);
 
             Console.WriteLine($"Item: {selectedItem.ItemName}, Quantity: {selectedItem.Quantity}");
         }
 
+        // Zurücksetzen der Zustände in menuItemStates, damit die UI aktualisiert wird
         foreach (var key in menuItemStates.Keys.ToList())
         {
             menuItemStates[key].Quantity = 0;
             menuItemStates[key].IsSelected = false;
         }
 
-        await JSRuntime.InvokeVoidAsync("confirm", "Bestellung ergänzt");
+        // Hier synchronisieren wir die bestellten Artikel mit dem SessionDataService
+        // Dies speichert die ausgewählten Artikel in der Session
+        var menuItemStatesForSession = selectedItems.ToDictionary(
+            x => x.ItemName,
+            x => new MenuItemState { Quantity = x.Quantity, IsSelected = true }
+        );
 
+        sdS.UpdateMenuItemStates(menuItemStatesForSession);
+
+        await JSRuntime.InvokeVoidAsync("confirm", "Bestellung ergänzt");
     }
+
 
 
     private void AddItemToSession(String id, int amount, String text)
