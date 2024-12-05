@@ -1,6 +1,7 @@
 ﻿@page "/warenkorb"
 @using ZumGelbenBach.Components.Models
 @inject SessionDataService sdS
+@inject NavigationManager manager
 
 <h3>Warenkorb</h3>
 
@@ -26,14 +27,14 @@ else
                     <td>@item.Key</td>
                     <td>
                         <input type="text"
-                               value="@item.Value.sProdukt"
-                               @oninput="e => OnDescriptionChange(item.Key, e.Value)" />
+                        value="@item.Value.sProdukt"
+                        @oninput="e => OnDescriptionChange(item.Key, e.Value)" />
                     </td>
                     <td>
                         <input type="number"
-                               min="1"
-                               value="@item.Value.Quantity"
-                               @oninput="e => OnQuantityChange(item.Key, e.Value)" />
+                        min="1"
+                        value="@item.Value.Quantity"
+                        @oninput="e => OnQuantityChange(item.Key, e.Value)" />
                     </td>
                     <td>
                         <button class="btn btn-danger" @onclick="() => RemoveFromCart(item.Key)">Entfernen</button>
@@ -71,6 +72,9 @@ else
     private void RemoveFromCart(string itemId)
     {
         sdS.RemoveItem(itemId);  // Artikel aus der Session entfernen
-        StateHasChanged();
+        menuItemStates = sdS.GetMenuItemStates();    
+        StateHasChanged();        
+        manager.NavigateTo(manager.Uri, true);
     }
+   
 }

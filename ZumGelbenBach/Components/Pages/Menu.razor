@@ -114,13 +114,13 @@ else
                 var row = new Dictionary<string, object>
                 {
                     { "Bezeichnung", reader["Bezeichnung"] },
-                    { "Beschreibung", reader["Beschreibung"] },
+                    { "Beschreibung", reader["Beschreibung"] },                    
                     { "Preis", reader["Preis"] },
                     { "Größe", reader["Größe"] },
                     { "Image", base64Image },
                     {"Menue_ID", reader["Menue_ID"]}
                 };
-
+               // if (row.TryGetValue("Preis").ToString().IndexOf("."))
                 menuItems.Add(row);
 
                 var itemId = row["Bezeichnung"].ToString() + row["Menue_ID"].ToString();
