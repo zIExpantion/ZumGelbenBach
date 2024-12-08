@@ -298,6 +298,12 @@ else
         //cb setzten wenn qualtity > 0 
         menuItemStates[itemId].IsSelected = quantity > 0;
 
+        // Entferne Artikel aus der Session, wenn Menge = 0
+        if (quantity == 0)
+        {
+            sdS.RemoveItem(itemId);
+        }
+
         StateHasChanged(); 
     }
 

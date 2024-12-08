@@ -37,29 +37,54 @@ else
                         @oninput="e => OnQuantityChange(item.Key, e.Value)" />
                     </td>
                     <td>
-                        <button class="btn btn-danger" @onclick="() => RemoveFromCart(item.Key)">Entfernen</button>
+                        <button class="btn btn-danger" @onclick="() => RemoveFromCart(item.Key)">Entfernen</button>                        
                     </td>
                 </tr>
             }
         </tbody>
     </table>
 
-    <p><strong>Gesamtsumme der Artikel: </strong>@menuItemStates.Values.Where(x => x.IsSelected).Sum(item => item.Quantity)</p>
+    <p><strong>Gesamtsumme der Artikel: </strong>@totalQuantity</p>
 }
 
 @code {
     private Dictionary<string, MenuItemState> menuItemStates = new Dictionary<string, MenuItemState>();
+    private int totalQuantity = 0;
 
     protected override void OnInitialized()
     {
         // Zustände aus der Session abrufen
         menuItemStates = sdS.GetMenuItemStates();
+
+        // Setze sicherheitshalber alle nicht vorhandenen Items auf einen Standardzustand
+        foreach (var key in menuItemStates.Keys)
+        {
+            if (!menuItemStates[key].IsSelected)
+            {
+                menuItemStates[key] = new MenuItemState
+                    {
+                        Quantity = 0,
+                        IsSelected = false,
+                        sProdukt = ""
+                    };
+            }
+        }
+
+        UpdateTotalQuantity(); // Gesamtsumme berechnen
     }
 
     private void OnQuantityChange(string itemId, object value)
     {
         int quantity = int.TryParse(value.ToString(), out var result) ? result : 1;
-        sdS.AddOrUpdateMenuItem(itemId, quantity, itemId); // Menge aktualisieren
+
+        // Aktualisiere die Menge im lokalen Zustand
+        if (menuItemStates.ContainsKey(itemId))
+        {
+            menuItemStates[itemId].Quantity = quantity;
+            // Speichere die Änderungen in der Session
+            sdS.AddOrUpdateMenuItem(itemId, quantity, menuItemStates[itemId].sProdukt);
+        }
+        UpdateTotalQuantity(); // Gesamtsumme aktualisieren
         StateHasChanged();
     }
 
@@ -70,11 +95,19 @@ else
     }
 
     private void RemoveFromCart(string itemId)
-    {
+    {        
         sdS.RemoveItem(itemId);  // Artikel aus der Session entfernen
-        menuItemStates = sdS.GetMenuItemStates();    
-        StateHasChanged();        
-        manager.NavigateTo(manager.Uri, true);
+        menuItemStates = sdS.GetMenuItemStates();      
+
+        UpdateTotalQuantity(); // Gesamtsumme aktualisieren
+        StateHasChanged();
+    }
+
+    private void UpdateTotalQuantity()
+    {
+        totalQuantity = menuItemStates.Values
+            .Where(x => x.IsSelected)
+            .Sum(item => item.Quantity);
     }
    
 }
