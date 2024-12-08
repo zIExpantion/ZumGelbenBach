@@ -121,6 +121,19 @@ else
                     {"Menue_ID", reader["Menue_ID"]}
                 };
                // if (row.TryGetValue("Preis").ToString().IndexOf("."))
+                
+               // Setze Preis auf 2 Nachkommastellen
+                if (row.TryGetValue("Preis", out var preisValue))
+                {
+                    if (decimal.TryParse(preisValue.ToString(), out var preis))
+                    {
+                        row["Preis"] = preis.ToString("F2");
+                    }
+                    else
+                    {
+                        row["Preis"] = "0.00";
+                    }
+                }
                 menuItems.Add(row);
 
                 var itemId = row["Bezeichnung"].ToString() + row["Menue_ID"].ToString();
