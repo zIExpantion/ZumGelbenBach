@@ -47,11 +47,14 @@ else
     </table>
 
     <p><strong>Gesamtsumme der Artikel: </strong>@totalQuantity</p>
+    <p>Tischnummer (1-16): <input type="number" @oninput="e => tablenumberValidation(e.Value)" id="tableID" @bind="tableID"/></p>
+    <button class="btn btn-danger" @onclick="() => BestellungSenden()">Bestellung abschließen</button>
 }
 
 @code {
     private Dictionary<string, MenuItemState> menuItemStates = new Dictionary<string, MenuItemState>();
     private int totalQuantity = 0;
+    private int? tableID { get; set; }
 
     protected override void OnInitialized()
     {
@@ -111,5 +114,22 @@ else
             .Where(x => x.IsSelected)
             .Sum(item => item.Quantity);
     }
-   
+
+    private void BestellungSenden()
+    {
+
+    }
+
+    private async void tablenumberValidation(object e)
+    {
+        int.TryParse(e.ToString(), out var result);
+        if (result < 1 || result > 15)
+        {
+            tableID = default;
+        }
+        else
+        {
+            tableID = result;
+        }
+    }
 }
