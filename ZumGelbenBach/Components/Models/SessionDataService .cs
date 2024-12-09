@@ -27,7 +27,7 @@
         {
             if (_menuItemStates.ContainsKey(itemId))
             {
-                _menuItemStates[itemId].Quantity += quantity;
+                _menuItemStates[itemId].Quantity = quantity;
                 _menuItemStates[itemId].sProdukt = product;
             }
             else
