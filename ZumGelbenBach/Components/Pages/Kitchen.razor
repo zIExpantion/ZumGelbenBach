@@ -2,9 +2,42 @@
 @rendermode InteractiveServer
 @using ZumGelbenBach;
 @using ZumGelbenBach.Components.Models
+@inject SessionDataService sdS
+@inject ShoppingCart sC
+
+<PageTitle>Küchenansicht</PageTitle>
 
 <h3>kitchen</h3>
+<br />
+<h4>Willkommen in der Küchenansicht! Hier werden alle Bestellungen gelistet.</h4>
+
+@if (sC.totalQuantity == 0)
+{
+    <p>Derzeit keine Bestellungen vorhanden</p>
+}
+else {
+    
+<div>
+    @foreach (var order in sC.menuItemStates) // Dynamisch alle Bestellungen iterieren
+    {
+        <h5>Bestellung #@order.Key</h5>
+       
+        <table>
+            <thead>
+                <tr>
+                    <th>Artikel</th>
+                    <th>Menge</th>
+                    <th>Preis</th>
+                </tr>
+            </thead>
+           
+        </table>
+    }
+</div>
+}
 
 @code {
+	
+
 
 }
