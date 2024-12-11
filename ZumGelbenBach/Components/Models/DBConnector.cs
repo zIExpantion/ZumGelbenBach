@@ -201,7 +201,7 @@ namespace ZumGelbenBach
             if (values.Count > 1)
             {
                 for(int i = 0; i < values.Count; i++)
-                {
+                { 
                     if (type[i] == 1)
                         valueString += "'" + values[i] + "', ";
                     else if (type[i] == 2)
