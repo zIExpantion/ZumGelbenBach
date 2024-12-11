@@ -19,6 +19,7 @@ else
                 <th>Produkt</th>
                 <th>Beschreibung</th>
                 <th>Anzahl</th>
+                <th>Preis</th>
                 <th></th>
             </tr>
         </thead>
@@ -38,6 +39,7 @@ else
                         value="@item.Value.Quantity"
                         @oninput="e => OnQuantityChange(item.Value.dbID, item.Key, e.Value)" />
                     </td>
+                    <td></td>
                     <td>
                         <button class="btn btn-danger" @onclick="() => RemoveFromCart(item.Key)">Entfernen</button>                        
                     </td>
@@ -54,8 +56,8 @@ else
 @code {
     [Inject] private IJSRuntime JSRuntime { get; set; }
 
-    public Dictionary<string, MenuItemState> menuItemStates = new Dictionary<string, MenuItemState>();
-    public int totalQuantity = 0;
+    private Dictionary<string, MenuItemState> menuItemStates = new Dictionary<string, MenuItemState>();
+    private int totalQuantity = 0;
     private int? tableID { get; set; }
 
     protected override void OnInitialized()
