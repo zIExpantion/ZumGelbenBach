@@ -142,7 +142,27 @@ namespace ZumGelbenBach
             return cmd.ExecuteReader();
         }
 
+        public SqliteDataReader ReadOrders(String table, String[] columns)
+        {
+            SqliteCommand cmd = conn.CreateCommand();
+            cmd.Connection = conn;
+            String columnsString;
 
+            if (columns.Length > 1)
+            {
+                columnsString = String.Join(", ", columns);
+            }
+            else
+            {
+                columnsString = columns[0];
+            }
+
+            String commString = String.Format(@$"Select {columnsString} FROM {table}");
+
+            cmd.CommandText = commString;
+            //cmd.ExecuteReader();
+            return cmd.ExecuteReader();
+        }
 
 
         /// <summary>
