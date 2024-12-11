@@ -39,7 +39,7 @@ else
                         value="@item.Value.Quantity"
                         @oninput="e => OnQuantityChange(item.Value.dbID, item.Key, e.Value)" />
                     </td>
-                    <td></td>
+                    <td>@getPrice(item.Value.dbID, item.Value.Quantity)</td>
                     <td>
                         <button class="btn btn-danger" @onclick="() => RemoveFromCart(item.Key)">Entfernen</button>                        
                     </td>
@@ -144,6 +144,20 @@ else
         }
         totalPrice = sum.ToString("F2") + "€";
 
+    }
+
+    private String getPrice (String dbID, int quantity)
+    {
+        DBConnector dB = new DBConnector();
+        decimal price = 0;
+
+        var reader = dB.getTotalPrice(dbID);
+        if (reader.Read())
+        {
+            decimal.TryParse(reader["Preis"].ToString(), out price);
+        }
+        price *= quantity;
+        return price.ToString("F2") + "€";
     }
 
 
