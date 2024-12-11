@@ -11,16 +11,16 @@
 <br />
 <h4>Willkommen in der Küchenansicht! Hier werden alle Bestellungen gelistet.</h4>
 
-@if (sC.totalQuantity == 0)
+
 {
     <p>Derzeit keine Bestellungen vorhanden</p>
 }
 else {
     
 <div>
-    @foreach (var order in sC.menuItemStates) // Dynamisch alle Bestellungen iterieren
+    // Dynamisch alle Bestellungen iterieren
     {
-        <h5>Bestellung #@order.Key</h5>
+        <h5>Bestellung </h5>
        
         <table>
             <thead>
