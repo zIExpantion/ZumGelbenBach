@@ -234,7 +234,7 @@ else
         // Dies speichert die ausgewählten Artikel in der Session
         var menuItemStatesForSession = selectedItems.ToDictionary(
             x => x.ItemName,
-            x => new MenuItemState { Quantity = x.Quantity, IsSelected = true }
+            x => new MenuItemState { Quantity = x.Quantity, IsSelected = true, dbID = x.dbID }
         );
 
         sdS.UpdateMenuItemStates(menuItemStatesForSession);

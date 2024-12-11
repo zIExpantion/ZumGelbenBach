@@ -49,6 +49,7 @@ else
     </table>
 
     <p><strong>Gesamtsumme der Artikel: </strong>@totalQuantity</p>
+    <p><strong>Gesamtsumme der Kosten: </strong>@totalPrice</p>
     <p>Tischnummer (1-16): <input type="number" @oninput="e => tablenumberValidation(e.Value)" id="tableID" @bind="tableID"/></p>
     <button class="btn btn-danger" @onclick="() => BestellungSenden()">Bestellung abschließen</button>
 }
@@ -58,6 +59,7 @@ else
 
     private Dictionary<string, MenuItemState> menuItemStates = new Dictionary<string, MenuItemState>();
     private int totalQuantity = 0;
+    private string totalPrice { get; set; }
     private int? tableID { get; set; }
 
     protected override void OnInitialized()
@@ -80,6 +82,7 @@ else
         }
 
         UpdateTotalQuantity(); // Gesamtsumme berechnen
+        UpdateTotalPrice();
     }
 
     private void OnQuantityChange(string dbID, string itemId, object value)
@@ -94,6 +97,7 @@ else
             sdS.AddOrUpdateMenuItem(dbID, itemId, quantity, menuItemStates[itemId].sProdukt);
         }
         UpdateTotalQuantity(); // Gesamtsumme aktualisieren
+        UpdateTotalPrice();
         StateHasChanged();
     }
 
@@ -109,6 +113,7 @@ else
         menuItemStates = sdS.GetMenuItemStates();      
 
         UpdateTotalQuantity(); // Gesamtsumme aktualisieren
+        UpdateTotalPrice();
         StateHasChanged();
     }
 
@@ -118,6 +123,30 @@ else
             .Where(x => x.IsSelected)
             .Sum(item => item.Quantity);
     }
+
+    private void UpdateTotalPrice()
+    {
+        DBConnector dB = new DBConnector();
+        decimal sum = 0;
+        foreach (var key in menuItemStates.Keys)
+        {
+            var reader = dB.getTotalPrice(menuItemStates[key].dbID);
+
+
+            while (reader.Read())
+            {
+                object price = reader["Preis"];
+
+                decimal.TryParse(price.ToString(), out var decPrice);
+                decPrice = decPrice * menuItemStates[key].Quantity;
+                sum += decPrice;
+            }
+        }
+        totalPrice = sum.ToString("F2") + "€";
+
+    }
+
+
 
     private async Task BestellungSenden()
     {
