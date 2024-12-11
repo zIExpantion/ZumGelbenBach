@@ -3,41 +3,82 @@
 @using ZumGelbenBach;
 @using ZumGelbenBach.Components.Models
 @inject SessionDataService sdS
-@inject ShoppingCart sC
+
 
 <PageTitle>Küchenansicht</PageTitle>
 
 <h3>kitchen</h3>
 <br />
-<h4>Willkommen in der Küchenansicht! Hier werden alle Bestellungen gelistet.</h4>
 
 
-{
-    <p>Derzeit keine Bestellungen vorhanden</p>
-}
-else {
-    
 <div>
-    // Dynamisch alle Bestellungen iterieren
+    @foreach (var item in orderItems)
     {
-        <h5>Bestellung </h5>
-       
-        <table>
-            <thead>
-                <tr>
-                    <th>Artikel</th>
-                    <th>Menge</th>
-                    <th>Preis</th>
-                </tr>
-            </thead>
-           
-        </table>
+        var itemId = item["ID"].ToString();
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0;" id="@itemId" class="menu-item">
+            <div style="flex-grow: 1; padding-left: 10px;">
+                <h5 style="margin: 0; font-size: 1rem; font-weight: normal;">@item["Product"].ToString()</h5>
+                <p style="margin: 5px 0 0; font-size: 0.85rem; color: #555;">Anzahl: @item["Amount"].ToString()</p>
+                <p style="margin: 5px 0 0; font-size: 0.85rem; color: #555;">Zusatzinfo: @item["AdditionalInfo"].ToString()</p>
+                <p style="margin: 5px 0 0; font-size: 0.85rem; color: #555;">Tischnummer: @item["TableID"].ToString()</p>
+            </div>
+        </div>
+        <hr style="margin: 5px 0; border: none; border-bottom: 1px solid #ddd;" />
+
     }
 </div>
-}
+
 
 @code {
-	
+    private Dictionary<string, OrderItemState> orderItemstates = new Dictionary<string, OrderItemState>();
+    private List<Dictionary<string, object>> orderItems = new List<Dictionary<string, object>>();
 
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetDataAsync();
+
+    }
+
+
+    private async Task GetDataAsync()
+    {
+        try
+        {
+            DBConnector dB = new DBConnector();
+            var reader = dB.ReadOrders("Orders", new[] { "OrderID", "TableNumber", "Product", "AdditionalInfo", "Amount" });
+
+            orderItems.Clear();
+
+            while (reader.Read())
+            {
+
+                var row = new Dictionary<string, object>
+                {
+                    { "ID", reader["OrderID"] },
+                    { "TableID", reader["TableNumber"] },
+                    { "Product", reader["Product"] },
+                    { "AdditionalInfo", reader["AdditionalInfo"] },
+                    { "Amount", reader["Amount"] }
+                };
+                orderItems.Add(row);
+
+                var itemId = row["ID"].ToString();
+                int.TryParse(row["Amount"].ToString(), out var intAmount);
+                orderItemstates[itemId] = new OrderItemState
+                    {
+                        amount = intAmount,
+                        sProdukt = row["Product"].ToString(),
+                        OrderID = row["ID"].ToString(),
+                        additionalInfo = row["AdditionalInfo"].ToString(),
+                        tableID = row["TableID"].ToString()
+                    };
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading data: {ex.Message}");
+        }
+    }
 
 }
