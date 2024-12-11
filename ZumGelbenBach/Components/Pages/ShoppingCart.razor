@@ -52,6 +52,8 @@ else
 }
 
 @code {
+    [Inject] private IJSRuntime JSRuntime { get; set; }
+
     public Dictionary<string, MenuItemState> menuItemStates = new Dictionary<string, MenuItemState>();
     public int totalQuantity = 0;
     private int? tableID { get; set; }
@@ -115,7 +117,7 @@ else
             .Sum(item => item.Quantity);
     }
 
-    private void BestellungSenden()
+    private async Task BestellungSenden()
     {
         try
         {
@@ -124,18 +126,33 @@ else
 
             foreach (var key in menuItemStates.Keys)
             {
-                
+
                 dB.SaveData("Orders",
                             ["TableNumber", "Product", "AdditionalInfo", "Amount"],
                             [tableID.ToString(),key, menuItemStates[key].sProdukt, menuItemStates[key].Quantity.ToString()],
                             [2,1,1,2]);
             }
+
+            await JSRuntime.InvokeVoidAsync("confirm", "Bestellung abgesendet");
+            ClearFields();
+
+
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading data: {ex.Message}");
         }
     }
+
+    private void ClearFields()
+    {
+        foreach(var key in menuItemStates.Keys)
+        {
+            sdS.RemoveItem(key);
+        }
+        StateHasChanged();
+    }
+
 
     private async void tablenumberValidation(object e)
     {
