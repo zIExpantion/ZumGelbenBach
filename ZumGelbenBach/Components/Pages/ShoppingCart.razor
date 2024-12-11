@@ -172,7 +172,9 @@ else
 
             foreach (var key in menuItemStates.Keys)
             {
-
+                //DENNIS
+                //ProductName wird aktuell noch nicht gefüllt. Muss bei Menu Bestellung passieren.
+                //Feld ProductName Wurde auf DB frisch hinzugefügt
                 dB.SaveData("Orders",
                             ["TableNumber", "Product", "AdditionalInfo", "Amount", "ProductName"],
                             [tableID.ToString(),key, menuItemStates[key].sProdukt, menuItemStates[key].Quantity.ToString(), menuItemStates[key].sProduktName],

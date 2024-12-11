@@ -327,8 +327,10 @@ namespace ZumGelbenBach
         public SqliteDataReader getTotalPrice(String dbID)
         {
             SqliteCommand cmd = conn.CreateCommand();
-            cmd.Connection = conn;     
-                        
+            cmd.Connection = conn;
+            String columnsString;
+
+            
             String commString = String.Format(@$"Select Preis FROM Menue WHERE Menue_ID = " + dbID);
 
             cmd.CommandText = commString;

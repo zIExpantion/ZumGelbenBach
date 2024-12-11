@@ -17,7 +17,7 @@
         var itemId = item["ID"].ToString();
         <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0;" id="@itemId" class="menu-item">
             <div style="flex-grow: 1; padding-left: 10px;">
-                <h5 style="margin: 0; font-size: 1rem; font-weight: normal;">@item["ProductName"].ToString()</h5>
+                <h5 style="margin: 0; font-size: 1rem; font-weight: normal;">@item["Bezeichnung"].ToString()</h5>
                 <p style="margin: 5px 0 0; font-size: 0.85rem; color: #555;">Anzahl: @item["Amount"].ToString()</p>
                 <p style="margin: 5px 0 0; font-size: 0.85rem; color: #555;">Zusatzinfo: @item["AdditionalInfo"].ToString()</p>
                 <p style="margin: 5px 0 0; font-size: 0.85rem; color: #555;">Tischnummer: @item["TableID"].ToString()</p>
@@ -73,7 +73,7 @@
                         OrderID = row["ID"].ToString(),
                         additionalInfo = row["AdditionalInfo"].ToString(),
                         tableID = row["TableID"].ToString(),
-                        ProductName = row["ProductName"].ToString()
+                        ProductName = row["Bezeichnung"].ToString()
                     };
             }
         }
