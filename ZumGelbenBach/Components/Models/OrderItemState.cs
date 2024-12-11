@@ -8,5 +8,6 @@
         public string additionalInfo { get; set; }
         public int amount { get; set; }
         public string tableID { get; set; }
+        public string ProductName { get; set; }
     }
 }

@@ -173,9 +173,9 @@ else
             {
 
                 dB.SaveData("Orders",
-                            ["TableNumber", "Product", "AdditionalInfo", "Amount"],
-                            [tableID.ToString(),key, menuItemStates[key].sProdukt, menuItemStates[key].Quantity.ToString()],
-                            [2,1,1,2]);
+                            ["TableNumber", "Product", "AdditionalInfo", "Amount", "ProductName"],
+                            [tableID.ToString(),key, menuItemStates[key].sProdukt, menuItemStates[key].Quantity.ToString(), menuItemStates[key].sProduktName],
+                            [2,1,1,2,1]);
             }
 
             await JSRuntime.InvokeVoidAsync("confirm", "Bestellung abgesendet");
