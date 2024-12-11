@@ -30,19 +30,19 @@ else
                     <td>@item.Key</td>
                     <td>
                         <input type="text"
-                        value="@item.Value.sProdukt"
-                        @oninput="e => OnDescriptionChange(item.Value.dbID, item.Key, e.Value)" />
+                               value="@item.Value.sProdukt"
+                               @oninput="async e => await OnDescriptionChange(item.Value.dbID, item.Key, e.Value)" />
                     </td>
                     <td>
                         <input type="number"
-                        min="1"
-                        max="100"
-                        value="@item.Value.Quantity"
-                        @oninput="e => OnQuantityChange(item.Value.dbID, item.Key, e.Value)" />
+                               min="1"
+                               max="100"
+                               value="@item.Value.Quantity"
+                               @oninput="async e => await OnQuantityChange(item.Value.dbID, item.Key, e.Value)" />
                     </td>
-                    <td>@getPrice(item.Value.dbID, item.Value.Quantity)</td>
+                    <td>@GetPrice(item.Key)</td>
                     <td>
-                        <button class="btn btn-danger" @onclick="() => RemoveFromCart(item.Key)">Entfernen</button>                        
+                        <button class="btn btn-danger" @onclick="() => RemoveFromCart(item.Key)">Entfernen</button>
                     </td>
                 </tr>
             }
@@ -51,167 +51,134 @@ else
 
     <p><strong>Gesamtsumme der Artikel: </strong>@totalQuantity</p>
     <p><strong>Gesamtsumme der Kosten: </strong>@totalPrice</p>
-    <p>Tischnummer (1-16): <input type="number" @oninput="e => tablenumberValidation(e.Value)" id="tableID" @bind="tableID"/></p>
-    <button class="btn btn-danger" @onclick="() => BestellungSenden()">Bestellung abschließen</button>
+    <p>Tischnummer (1-16): <input type="number" @oninput="e => TablenumberValidation(e.Value)" id="tableID" @bind="tableID" /></p>
+    <button class="btn btn-danger" @onclick="async () => await BestellungSenden()">Bestellung abschließen</button>
 }
 
 @code {
     [Inject] private IJSRuntime JSRuntime { get; set; }
 
-    private Dictionary<string, MenuItemState> menuItemStates = new Dictionary<string, MenuItemState>();
-    private int totalQuantity = 0;
+    private DBConnector dB = new(); // Globale Instanz von DBConnector
+    private Dictionary<string, MenuItemState> menuItemStates = new();
+    private Dictionary<string, decimal> priceCache = new(); // Cache für Preise
+    private int totalQuantity;
     private string totalPrice { get; set; }
     private int? tableID { get; set; }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // Zustände aus der Session abrufen
         menuItemStates = sdS.GetMenuItemStates();
-
-        // Setze sicherheitshalber alle nicht vorhandenen Items auf einen Standardzustand
-        foreach (var key in menuItemStates.Keys)
-        {
-            if (!menuItemStates[key].IsSelected)
-            {
-                menuItemStates[key] = new MenuItemState
-                    {
-                        Quantity = 0,
-                        IsSelected = false,
-                        sProdukt = ""
-                    };
-            }
-        }
-
-        UpdateTotalQuantity(); // Gesamtsumme berechnen
-        UpdateTotalPrice();
+        await LoadPricesAsync();
+        UpdateTotals();
     }
 
-    private void OnQuantityChange(string dbID, string itemId, object value)
+    private async Task LoadPricesAsync()
     {
-        int quantity = int.TryParse(value.ToString(), out var result) ? result : 1;
+        var dbIDs = menuItemStates.Values.Select(x => x.dbID).Distinct();
+        foreach (var dbID in dbIDs)
+        {
+            var reader = await dB.GetTotalPriceAsync(dbID);
+            if (reader.Read())
+            {
+                decimal.TryParse(reader["Preis"].ToString(), out var price);
+                priceCache[dbID] = price;
+            }
+        }
+    }
 
-        // Aktualisiere die Menge im lokalen Zustand
+    private async Task OnQuantityChange(string dbID, string itemId, object value)
+    {
+        if (!int.TryParse(value.ToString(), out var quantity)) quantity = 1;
+
         if (menuItemStates.ContainsKey(itemId))
         {
             menuItemStates[itemId].Quantity = quantity;
-            // Speichere die Änderungen in der Session
             sdS.AddOrUpdateMenuItem(dbID, itemId, quantity, menuItemStates[itemId].sProdukt);
         }
-        UpdateTotalQuantity(); // Gesamtsumme aktualisieren
-        UpdateTotalPrice();
-        StateHasChanged();
+        UpdateTotals();
     }
 
-    private void OnDescriptionChange(string dbID, string itemId, object value)
+    private async Task OnDescriptionChange(string dbID, string itemId, object value)
     {
-        sdS.AddOrUpdateMenuItem(dbID, itemId, menuItemStates[itemId].Quantity, value?.ToString()); // Beschreibung aktualisieren
-        StateHasChanged();
+        if (menuItemStates.ContainsKey(itemId))
+        {
+            menuItemStates[itemId].sProdukt = value?.ToString();
+            sdS.AddOrUpdateMenuItem(dbID, itemId, menuItemStates[itemId].Quantity, menuItemStates[itemId].sProdukt);
+        }
     }
 
     private void RemoveFromCart(string itemId)
-    {        
-        sdS.RemoveItem(itemId);  // Artikel aus der Session entfernen
-        menuItemStates = sdS.GetMenuItemStates();      
-
-        UpdateTotalQuantity(); // Gesamtsumme aktualisieren
-        UpdateTotalPrice();
-        StateHasChanged();
+    {
+        sdS.RemoveItem(itemId);
+        menuItemStates.Remove(itemId);
+        UpdateTotals();
     }
 
-    private void UpdateTotalQuantity()
+    private void UpdateTotals()
     {
-        totalQuantity = menuItemStates.Values
+        totalQuantity = menuItemStates.Values.Where(x => x.IsSelected).Sum(x => x.Quantity);
+        totalPrice = menuItemStates.Values
             .Where(x => x.IsSelected)
-            .Sum(item => item.Quantity);
+            .Sum(x => priceCache.ContainsKey(x.dbID) ? priceCache[x.dbID] * x.Quantity : 0)
+            .ToString("F2") + "€";
     }
 
-    private void UpdateTotalPrice()
+    private string GetPrice(string itemId)
     {
-        DBConnector dB = new DBConnector();
-        decimal sum = 0;
-        foreach (var key in menuItemStates.Keys)
+        var item = menuItemStates[itemId];
+        if (priceCache.TryGetValue(item.dbID, out var price))
         {
-            var reader = dB.getTotalPrice(menuItemStates[key].dbID);
-
-
-            while (reader.Read())
-            {
-                object price = reader["Preis"];
-
-                decimal.TryParse(price.ToString(), out var decPrice);
-                decPrice = decPrice * menuItemStates[key].Quantity;
-                sum += decPrice;
-            }
+            return (price * item.Quantity).ToString("F2") + "€";
         }
-        totalPrice = sum.ToString("F2") + "€";
-
+        return "0.00€";
     }
-
-    private String getPrice (String dbID, int quantity)
-    {
-        DBConnector dB = new DBConnector();
-        decimal price = 0;
-
-        var reader = dB.getTotalPrice(dbID);
-        if (reader.Read())
-        {
-            decimal.TryParse(reader["Preis"].ToString(), out price);
-        }
-        price *= quantity;
-        return price.ToString("F2") + "€";
-    }
-
-
 
     private async Task BestellungSenden()
     {
         try
         {
-            DBConnector dB = new DBConnector();
-
-
-            foreach (var key in menuItemStates.Keys)
+            foreach (var item in menuItemStates.Values.Where(x => x.IsSelected))
             {
-                //DENNIS
-                //ProductName wird aktuell noch nicht gefüllt. Muss bei Menu Bestellung passieren.
-                //Feld ProductName Wurde auf DB frisch hinzugefügt
-                dB.SaveData("Orders",
-                            ["TableNumber", "Product", "AdditionalInfo", "Amount", "ProductName"],
-                            [tableID.ToString(),key, menuItemStates[key].sProdukt, menuItemStates[key].Quantity.ToString(), menuItemStates[key].sProduktName],
-                            [2,1,1,2,1]);
-            }
+                var values = new List<string>
+            {
+                tableID.ToString(),
+                item.dbID.ToString(),
+                item.sProdukt,
+                item.Quantity.ToString(),
+                item.sProduktName
+            };
 
+                await dB.SaveDataAsync("Orders",
+                                    new[] { "TableNumber", "Product", "AdditionalInfo", "Amount", "ProductName" },
+                                    values,
+                                    new List<int> { 1, 2, 1, 2, 1 });
+            }
             await JSRuntime.InvokeVoidAsync("confirm", "Bestellung abgesendet");
             ClearFields();
-
-
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading data: {ex.Message}");
+            Console.WriteLine($"Error: {ex.Message}");
         }
     }
 
     private void ClearFields()
     {
-        foreach(var key in menuItemStates.Keys)
-        {
-            sdS.RemoveItem(key);
-        }
+        menuItemStates.Clear();
+        totalQuantity = 0;
+        totalPrice = "0.00€";
         StateHasChanged();
     }
 
-
-    private async void tablenumberValidation(object e)
+    private void TablenumberValidation(object e)
     {
-        int.TryParse(e.ToString(), out var result);
-        if (result < 1 || result > 15)
+        if (int.TryParse(e.ToString(), out var result) && result >= 1 && result <= 16)
         {
-            tableID = default;
+            tableID = result;
         }
         else
         {
-            tableID = result;
+            tableID = null;
         }
     }
 }

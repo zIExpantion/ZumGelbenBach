@@ -196,41 +196,38 @@ namespace ZumGelbenBach
         }
 
 
-        
+
         //INSERET      
-        public void SaveData(String table, String[] columns, List<String> values, List<int> type)
+        public async Task SaveDataAsync(string table, string[] columns, List<string> values, List<int> type)
         {
-            //INT von Dictionary:
-            //1 == String
-            //2 == INT
-            //3 == numeric
+            // INT von Dictionary:
+            // 1 == String
+            // 2 == INT
+            // 3 == numeric
 
             SqliteCommand cmd = conn.CreateCommand();
             cmd.Connection = conn;
 
-            //columns
-            String columnString;
+            // columns
+            string columnString;
 
             if (columns.Length > 1)
-                columnString = String.Join(", ", columns);
+                columnString = string.Join(", ", columns);
             else
                 columnString = columns[0];
 
-            String valueString = "";
-            //values
+            string valueString = "";
+            // values
             if (values.Count > 1)
             {
-                for(int i = 0; i < values.Count; i++)
-                { 
+                for (int i = 0; i < values.Count; i++)
+                {
                     if (type[i] == 1)
-                        valueString += "'" + values[i] + "', ";
+                        valueString += $"'{values[i]}', ";
                     else if (type[i] == 2)
-                        valueString += values[i] + ", ";
+                        valueString += $"{values[i]}, ";
                     else if (type[i] == 3)
-                        if (values[i].Contains(","))
-                            valueString += values[i].Replace(",", ".") + ", ";
-                        else
-                            valueString += values[i] + ", ";
+                        valueString += values[i].Contains(",") ? $"{values[i].Replace(",", ".")}, " : $"{values[i]}, ";
                 }
 
                 valueString = valueString.Substring(0, valueString.Length - 2);
@@ -238,42 +235,47 @@ namespace ZumGelbenBach
             else
             {
                 if (type[0] == 1)
-                    valueString = "'" + values[0] + "'";
+                    valueString = $"'{values[0]}'";
                 else if (type[0] == 2)
                     valueString = values[0];
                 else if (type[0] == 3)
-                    if (values[0].Contains(","))
-                        valueString = values[0].Replace(",", ".");
-                    else
-                        valueString = values[0];
+                    valueString = values[0].Contains(",") ? values[0].Replace(",", ".") : values[0];
             }
 
-            valueString = "(" + valueString + ")";
-
+            valueString = $"({valueString})";
 
             System.Diagnostics.Debug.WriteLine(valueString);
 
+            string commString = $"INSERT INTO {table}({columnString}) VALUES {valueString}";
 
-            String commString = String.Format("Insert into {0}({1}) VALUES {2}", table, columnString, valueString);
+            
 
-            System.Diagnostics.Debug.WriteLine(commString);
-
-            cmd.CommandText = commString;
-            cmd.ExecuteNonQuery();
-
+            try
+            {
+                cmd.CommandText = commString;
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (SqliteException sqlEx)
+            {
+                System.Diagnostics.Debug.WriteLine(commString);
+                Console.WriteLine($"SQL Error: {sqlEx.Message}");
+                Console.WriteLine($"SQL State: {sqlEx.SqliteErrorCode}");
+                Console.WriteLine($"SQL Command: {sqlEx.BatchCommand}");
+            }
         }
 
 
+
         /// <summary>
-            ///     Aktualisiert Daten in einer angegebenen Tabelle.
-            ///     Aufruf:UpdateData("MeineTabelle", new string[] { "Spalte1", "Spalte2" }, new List<object> { newValue1, newValue2}, "ID", 123);
-            /// </summary>
-            /// <typeparam name="T">Der Typ der Werte, die aktualisiert werden sollen.</typeparam>
-            /// <param name="table">Der Name der Tabelle, die aktualisiert werden soll.</param>
-            /// <param name="columns">Ein Array von Spaltennamen, die aktualisiert werden sollen.</param>
-            /// <param name="values">Eine Liste von Werten, die in den Spalten aktualisiert werden sollen.</param>
-            /// <param name="conditionColumn">Die Spalte, die als Bedingung für die Aktualisierung verwendet wird.</param>
-            /// <param name="conditionValue">Der Wert, der die Bedingung für die Aktualisierung darstellt.</param>
+        ///     Aktualisiert Daten in einer angegebenen Tabelle.
+        ///     Aufruf:UpdateData("MeineTabelle", new string[] { "Spalte1", "Spalte2" }, new List<object> { newValue1, newValue2}, "ID", 123);
+        /// </summary>
+        /// <typeparam name="T">Der Typ der Werte, die aktualisiert werden sollen.</typeparam>
+        /// <param name="table">Der Name der Tabelle, die aktualisiert werden soll.</param>
+        /// <param name="columns">Ein Array von Spaltennamen, die aktualisiert werden sollen.</param>
+        /// <param name="values">Eine Liste von Werten, die in den Spalten aktualisiert werden sollen.</param>
+        /// <param name="conditionColumn">Die Spalte, die als Bedingung für die Aktualisierung verwendet wird.</param>
+        /// <param name="conditionValue">Der Wert, der die Bedingung für die Aktualisierung darstellt.</param>
         /// </summary>
         public void UpdateData<T>(string table, string[] columns, List<T> values, string conditionColumn, T conditionValue)
         {
@@ -324,17 +326,14 @@ namespace ZumGelbenBach
             return false;
         }
 
-        public SqliteDataReader getTotalPrice(String dbID)
+        public async Task<SqliteDataReader> GetTotalPriceAsync(string dbID)
         {
             SqliteCommand cmd = conn.CreateCommand();
             cmd.Connection = conn;
-            String columnsString;
 
-            
-            String commString = String.Format(@$"Select Preis FROM Menue WHERE Menue_ID = " + dbID);
-
+            string commString = @$"SELECT Preis FROM Menue WHERE Menue_ID = {dbID}";
             cmd.CommandText = commString;
-            return cmd.ExecuteReader();
+            return await cmd.ExecuteReaderAsync();
         }
 
 
