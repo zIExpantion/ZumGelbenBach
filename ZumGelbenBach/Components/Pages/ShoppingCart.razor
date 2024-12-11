@@ -30,13 +30,13 @@ else
                     <td>
                         <input type="text"
                         value="@item.Value.sProdukt"
-                        @oninput="e => OnDescriptionChange(item.Key, e.Value)" />
+                        @oninput="e => OnDescriptionChange(item.Value.dbID, item.Key, e.Value)" />
                     </td>
                     <td>
                         <input type="number"
                         min="1"
                         value="@item.Value.Quantity"
-                        @oninput="e => OnQuantityChange(item.Key, e.Value)" />
+                        @oninput="e => OnQuantityChange(item.Value.dbID, item.Key, e.Value)" />
                     </td>
                     <td>
                         <button class="btn btn-danger" @onclick="() => RemoveFromCart(item.Key)">Entfernen</button>                        
@@ -80,7 +80,7 @@ else
         UpdateTotalQuantity(); // Gesamtsumme berechnen
     }
 
-    private void OnQuantityChange(string itemId, object value)
+    private void OnQuantityChange(string dbID, string itemId, object value)
     {
         int quantity = int.TryParse(value.ToString(), out var result) ? result : 1;
 
@@ -89,15 +89,15 @@ else
         {
             menuItemStates[itemId].Quantity = quantity;
             // Speichere die Änderungen in der Session
-            sdS.AddOrUpdateMenuItem(itemId, quantity, menuItemStates[itemId].sProdukt);
+            sdS.AddOrUpdateMenuItem(dbID, itemId, quantity, menuItemStates[itemId].sProdukt);
         }
         UpdateTotalQuantity(); // Gesamtsumme aktualisieren
         StateHasChanged();
     }
 
-    private void OnDescriptionChange(string itemId, object value)
+    private void OnDescriptionChange(string dbID, string itemId, object value)
     {
-        sdS.AddOrUpdateMenuItem(itemId, menuItemStates[itemId].Quantity, value?.ToString()); // Beschreibung aktualisieren
+        sdS.AddOrUpdateMenuItem(dbID, itemId, menuItemStates[itemId].Quantity, value?.ToString()); // Beschreibung aktualisieren
         StateHasChanged();
     }
 

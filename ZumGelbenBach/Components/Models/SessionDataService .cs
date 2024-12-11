@@ -23,7 +23,7 @@
         }
 
         // Fügt ein Element hinzu oder aktualisiert es
-        public void AddOrUpdateMenuItem(string itemId, int quantity, string product)
+        public void AddOrUpdateMenuItem(string dbID, string itemId, int quantity, string product)
         {
             if (_menuItemStates.ContainsKey(itemId))
             {
@@ -34,6 +34,7 @@
             {
                 _menuItemStates[itemId] = new MenuItemState
                 {
+                    dbID = dbID,
                     Quantity = quantity,
                     sProdukt = product,
                     IsSelected = true

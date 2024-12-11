@@ -7,5 +7,7 @@
         public int Quantity { get; set; }
         public string sProdukt { get; set; } // was ist selektiert fehlt noch !!!!!!!!!!!
         public bool IsSelected { get; set; }
+
+        public string dbID { get; set; }
     }
 }
