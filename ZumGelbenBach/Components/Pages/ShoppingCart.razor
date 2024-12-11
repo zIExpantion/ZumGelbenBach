@@ -54,8 +54,8 @@ else
 @code {
     [Inject] private IJSRuntime JSRuntime { get; set; }
 
-    public Dictionary<string, MenuItemState> menuItemStates = new Dictionary<string, MenuItemState>();
-    public int totalQuantity = 0;
+    private Dictionary<string, MenuItemState> menuItemStates = new Dictionary<string, MenuItemState>();
+    private int totalQuantity = 0;
     private int? tableID { get; set; }
 
     protected override void OnInitialized()
