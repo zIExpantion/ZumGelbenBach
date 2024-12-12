@@ -169,14 +169,14 @@ else
         // Holen Sie sich alle ausgewählten und nicht-leeren Menüitems
         var selectedItems = menuItemStates
             .Where(x => x.Value.IsSelected && x.Value.Quantity > 0)
-            .Select(x => new { ItemName = x.Key, Quantity = x.Value.Quantity, dbID = x.Value.dbID })
+            .Select(x => new { ItemName = x.Key, Quantity = x.Value.Quantity, dbID = x.Value.dbID, sProduktName = x.Value.sProduktName })
             .ToList();
 
         // Füge alle ausgewählten Artikel zur Session hinzu
         foreach (var selectedItem in selectedItems)
         {
             // Hier fügen wir die ausgewählten Artikel in die Session ein (SessionDataService)
-            AddItemToSession(selectedItem.dbID, selectedItem.ItemName, selectedItem.Quantity, selectedItem.ItemName);
+            AddItemToSession(selectedItem.dbID, selectedItem.ItemName, selectedItem.Quantity, selectedItem.ItemName, selectedItem.sProduktName);
 
             Console.WriteLine($"Item: {selectedItem.ItemName}, Quantity: {selectedItem.Quantity}");
         }
@@ -192,7 +192,7 @@ else
         // Dies speichert die ausgewählten Artikel in der Session
         var menuItemStatesForSession = selectedItems.ToDictionary(
             x => x.ItemName,
-            x => new MenuItemState { Quantity = x.Quantity, IsSelected = true, dbID = x.dbID }
+            x => new MenuItemState { Quantity = x.Quantity, IsSelected = true, dbID = x.dbID, sProduktName = x.sProduktName }
         );
 
         sdS.UpdateMenuItemStates(menuItemStatesForSession);
@@ -201,14 +201,14 @@ else
 
 
 
-    private void AddItemToSession(String dbID, String id, int amount, String text)
+    private void AddItemToSession(String dbID, String id, int amount, String text, string sProductName)
     {
         // Beispiel: Füge ein neues Item mit einer eindeutigen ID zur Session hinzu
         string newItemId = "New Item " + (menuItemStates.Count + 1);  // oder eine andere Logik für eine ID
 
         //sdS.AddOrUpdateMenuItem(newItemId, 1, "Neues Produkt");
 
-        sdS.AddOrUpdateMenuItem(dbID, id, amount, text);
+        sdS.AddOrUpdateMenuItem(dbID, id, amount, text, sProductName);
     }
 
     private void ClearItems()

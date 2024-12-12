@@ -93,7 +93,7 @@ else
         if (menuItemStates.ContainsKey(itemId))
         {
             menuItemStates[itemId].Quantity = quantity;
-            sdS.AddOrUpdateMenuItem(dbID, itemId, quantity, menuItemStates[itemId].sProdukt);
+            sdS.AddOrUpdateMenuItem(dbID, itemId, quantity, menuItemStates[itemId].sProdukt, menuItemStates[itemId].sProduktName);
         }
         UpdateTotals();
     }
@@ -103,7 +103,7 @@ else
         if (menuItemStates.ContainsKey(itemId))
         {
             menuItemStates[itemId].sProdukt = value?.ToString();
-            sdS.AddOrUpdateMenuItem(dbID, itemId, menuItemStates[itemId].Quantity, menuItemStates[itemId].sProdukt);
+            sdS.AddOrUpdateMenuItem(dbID, itemId, menuItemStates[itemId].Quantity, menuItemStates[itemId].sProdukt, menuItemStates[itemId].sProduktName);
         }
     }
 
