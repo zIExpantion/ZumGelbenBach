@@ -21,6 +21,7 @@
                 <p style="margin: 5px 0 0; font-size: 0.85rem; color: #555;">Anzahl: @item["Amount"].ToString()</p>
                 <p style="margin: 5px 0 0; font-size: 0.85rem; color: #555;">Zusatzinfo: @item["AdditionalInfo"].ToString()</p>
                 <p style="margin: 5px 0 0; font-size: 0.85rem; color: #555;">Tischnummer: @item["TableID"].ToString()</p>
+                <button class="btn btn-danger" @onclick="() => accomplishOrder(item)">Erledigt</button>
             </div>
         </div>
         <hr style="margin: 5px 0; border: none; border-bottom: 1px solid #ddd;" />
@@ -45,6 +46,7 @@
     {
         try
         {
+            
             DBConnector dB = new DBConnector();
             var reader = dB.ReadOrders("Orders", new[] { "OrderID", "TableNumber", "Product", "AdditionalInfo", "Amount", "ProductName" });
 
@@ -82,5 +84,20 @@
             Console.WriteLine($"Error loading data: {ex.Message}");
         }
     }
+    private void accomplishOrder(Dictionary<String, object> item)
+    {
+        try {
+            orderItems.Remove(item);
+            StateHasChanged(); //aktualisiert die UI
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error removing item: {ex.Message}");
+        }
+            
+            
+    }
+    
 
 }
