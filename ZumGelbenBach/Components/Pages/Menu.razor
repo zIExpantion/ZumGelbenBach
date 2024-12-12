@@ -74,7 +74,7 @@ else
     [Inject] private IJSRuntime JSRuntime { get; set; }
     [Inject] private SessionDataService sdS { get; set; }
     private Dictionary<string, MenuItemState> menuItemStates = new Dictionary<string, MenuItemState>();
-
+    private DBConnector db = new DBConnector();
 
     private int currentCount = 0;
     private int _quantity { get; set; }
@@ -93,7 +93,7 @@ else
     {
         
         await GetDataAsync(); // Automatically load menu data on page load
-                              //await GetCaloriesAsync(); noch ein fehler findet keine Daten aktuell problem ist der Reader in GetCaloriesAsync
+        await GetCaloriesAsync(); // noch ein fehler findet keine Daten aktuell problem ist der Reader in GetCaloriesAsync
         isDataLoaded = true;
     }
 
@@ -101,8 +101,7 @@ else
     {
         try
         {
-            DBConnector dB = new DBConnector();
-            var reader = dB.ReadMenuWithImages("Menue", new[] { "Menue_ID", "Bezeichnung", "Beschreibung", "Preis", "Größe", "Images.Photo" }, "Image", "Images", "ImgID");
+            var reader = db.ReadMenuWithImages("Menue", new[] { "Menue_ID", "Bezeichnung", "Beschreibung", "Preis", "Größe", "Images.Photo" }, "Image", "Images", "ImgID");
 
             menuItems.Clear();
 
@@ -248,20 +247,15 @@ else
     /// <param name="value"></param>
     private void OnQuantityChange(string itemId, object value)
     {
-        //Zahlenwert speichern 
+
         int quantity = int.TryParse(value.ToString(), out var result) ? result : 0;
 
         // Update vom Zustand
         menuItemStates[itemId].Quantity = quantity;
-
-        //cb setzten wenn qualtity > 0 
         menuItemStates[itemId].IsSelected = quantity > 0;
 
-        // Entferne Artikel aus der Session, wenn Menge = 0
         if (quantity == 0)
-        {
-            sdS.RemoveItem(itemId);
-        }
+        { sdS.RemoveItem(itemId); }
 
         StateHasChanged(); 
     }
@@ -273,7 +267,7 @@ else
     /// <returns></returns>
     public async Task GetCaloriesAsync()
     {
-        DBConnector db = new DBConnector();
+        
         string sqlQuery = "SELECT Menue_ID,Bezeichnung, kcal FROM Menue WHERE inaktiv = 0";
         string bezeichnung;
         object kcalValue;
