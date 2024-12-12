@@ -157,7 +157,7 @@ namespace ZumGelbenBach
                 columnsString = columns[0];
             }
 
-            String commString = String.Format(@$"Select {columnsString} FROM {table}");
+            String commString = String.Format(@$"Select {columnsString} FROM {table} WHERE Erledigt != 1");
 
             cmd.CommandText = commString;
             //cmd.ExecuteReader();
@@ -337,7 +337,18 @@ namespace ZumGelbenBach
         }
 
 
+        private void updateOrderStatus(String id)
+        {
+            SqliteCommand cmd = conn.CreateCommand();
+            cmd.Connection = conn;
 
+            string commString = $@"UPDATE Orders SET Erledigt = 1 WHERE OrderID = {id}";
+            cmd.CommandText = commString;
+            
+            cmd.ExecuteNonQuery();
+        }
 
     }
+
+     
 }

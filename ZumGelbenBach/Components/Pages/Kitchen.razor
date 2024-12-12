@@ -33,6 +33,7 @@
 @code {
     private Dictionary<string, OrderItemState> orderItemstates = new Dictionary<string, OrderItemState>();
     private List<Dictionary<string, object>> orderItems = new List<Dictionary<string, object>>();
+    private DBConnector dB = new(); // Globale Instanz von DBConnector
 
 
     protected override async Task OnInitializedAsync()
@@ -46,9 +47,9 @@
     {
         try
         {
-            
-            DBConnector dB = new DBConnector();
-            var reader = dB.ReadOrders("Orders", new[] { "OrderID", "TableNumber", "Product", "AdditionalInfo", "Amount", "ProductName" });
+
+           
+            var reader = dB.ReadOrders("Orders", new[] { "OrderID", "TableNumber", "Product", "AdditionalInfo", "Amount", "ProductName" , "Erledigt"});
 
             orderItems.Clear();
 
@@ -62,7 +63,8 @@
                     { "Product", reader["Product"] },
                     { "AdditionalInfo", reader["AdditionalInfo"] },
                     { "Amount", reader["Amount"] },
-                    { "Bezeichnung", reader["ProductName"]}
+                    { "Bezeichnung", reader["ProductName"]},
+                    { "Erledigt", reader["Erledigt"]}
                 };
                 orderItems.Add(row);
 
@@ -75,7 +77,8 @@
                         OrderID = row["ID"].ToString(),
                         additionalInfo = row["AdditionalInfo"].ToString(),
                         tableID = row["TableID"].ToString(),
-                        ProductName = row["Bezeichnung"].ToString()
+                        ProductName = row["Bezeichnung"].ToString(),
+                        erledigt = row["Erledigt"].ToString()
                     };
             }
         }
@@ -84,12 +87,13 @@
             Console.WriteLine($"Error loading data: {ex.Message}");
         }
     }
-    private void accomplishOrder(Dictionary<String, object> item)
+    private async Task accomplishOrder(Dictionary<String, object> item)
     {
-        try {
+        try {            
+            String id = item["ID"].ToString();
+            
             orderItems.Remove(item);
             StateHasChanged(); //aktualisiert die UI
-
         }
         catch (Exception ex)
         {
@@ -98,6 +102,8 @@
             
             
     }
+
+   
     
 
 }
