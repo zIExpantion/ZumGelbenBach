@@ -2,6 +2,7 @@
 @rendermode InteractiveServer
 @using ZumGelbenBach;
 @using ZumGelbenBach.Components.Models
+@using System.Text.Json;
 @inject HttpClient HttpClient
 
 
@@ -91,7 +92,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        
+
         await GetDataAsync(); // Automatically load menu data on page load
         await GetCaloriesAsync(); // noch ein fehler findet keine Daten aktuell problem ist der Reader in GetCaloriesAsync
         isDataLoaded = true;
@@ -262,86 +263,109 @@ else
 
 
     /// <summary>
-    ///     
+    ///
     /// </summary>
     /// <returns></returns>
     public async Task GetCaloriesAsync()
     {
-        
-        string sqlQuery = "SELECT Menue_ID,Bezeichnung, kcal FROM Menue WHERE inaktiv = 0";
-        string bezeichnung;
-        object kcalValue;
-        int id;
-
-        var reader = db.ExecuteCommand(sqlQuery);
-
-        // Iteriere durch die Daten
-        while (reader.Read())
-        {
-            bezeichnung = reader["Bezeichnung"].ToString();
-            id = Convert.ToInt32(reader["Menue_ID"]);
-            kcalValue = reader["kcal"];
-
-            // Prüfe, ob der Wert für kcal leer ist
-            if (kcalValue == DBNull.Value || string.IsNullOrWhiteSpace(kcalValue.ToString()))
-            {
-                if (!string.IsNullOrWhiteSpace(bezeichnung))
-                {
-                    await CallAPI(bezeichnung,id);                    
-                }
-                else
-                {
-                    Console.WriteLine("Bezeichnung fehlt, API-Aufruf übersprungen.");
-                }
-            }
-            else
-            {
-                Console.WriteLine($"Das Menüelement '{bezeichnung}' hat {kcalValue} kcal.");
-            }
-        }
-    }
-
-    /// <summary>
-    /// Ruft die Nutritionix-API auf, um Kalorieninformationen für ein Lebensmittel zu erhalten.
-    /// </summary>
-    /// <param name="foodName">Der Name des Lebensmittels, für das Kalorieninformationen benötigt werden.</param>
-    /// <returns>Eine Nachricht mit den Kalorieninformationen oder einem Fehler.</returns>
-    private async Task CallAPI(string foodName,int id)
-    {
         try
         {
-            var apiUrl = "https://trackapi.nutritionix.com/v2/natural/nutrients";
-            var requestBody = new { query = foodName };
-            string sqlCmd;
-            DBConnector dB = new DBConnector();
+            string sqlQuery = "SELECT Menue_ID, Bezeichnung, kcal FROM Menue WHERE inaktiv = 0";
 
-            // API-Schlüssel und ID einfügen
-            HttpClient.DefaultRequestHeaders.Clear();
-            HttpClient.DefaultRequestHeaders.Add("x-app-id", "dd00912d");
-            HttpClient.DefaultRequestHeaders.Add("x-app-key", "0d5bcef6c4bba8ca8816901cb5cfa548");
-
-            var response = await HttpClient.PostAsJsonAsync(apiUrl, requestBody);
-
-            if (response.IsSuccessStatusCode)
+            // Verwende await, um auf das Task-Ergebnis zuzugreifen
+            using (var reader = await db.ExecuteCommandAsync(sqlQuery))
             {
-                var nutritionData = await response.Content.ReadFromJsonAsync<NutritionResponse>();
-                if (nutritionData != null && nutritionData.Foods.Any())
+                while (reader != null && reader.Read())
                 {
-                    var food = nutritionData.Foods.First();
-                    sqlCmd = $"Update Menue Set kcal = {food.NfCalories} WHERE Bezeichnung = {foodName} AND Menue_id = {id}";
-                    dB.ExecuteCommand(sqlCmd);
+                    string bezeichnung = reader["Bezeichnung"]?.ToString() ?? string.Empty;
+                    int id = reader["Menue_ID"] != DBNull.Value ? Convert.ToInt32(reader["Menue_ID"]) : 0;
+                    object kcalValue = reader["kcal"];
+
+                    if (kcalValue == DBNull.Value || string.IsNullOrWhiteSpace(kcalValue.ToString()))
+                    {
+                        await CallAPI(bezeichnung, id);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Item: {bezeichnung}, kcal: {kcalValue}");
+                    }
                 }
-                else
-                    Console.WriteLine("Keine Daten gefunden");                
-            }
-            else
-            {
-                Console.WriteLine( $"Fehler: {response.StatusCode}. Bitte prüfen Sie Ihre Eingabe.");
             }
         }
         catch (Exception e)
         {
-            Console.WriteLine($"Fehler beim API-Aufruf: {e.Message}");            
+            Console.WriteLine("Fehlermeldung: " + e.Message);
+        }
+    }
+
+
+    /// <summary>
+    /// Ruft die Nutritionix-API auf, um Kalorieninformationen für ein Lebensmittel zu erhalten.
+    /// https://trackapi.nutritionix.com/v2/search/item?upc=49000000450&x-app-id=dd00912d&x-app-key=0d5bcef6c4bba8ca8816901cb5cfa548 
+    /// query also die suche nach einem gericht nach namen wird von der api abgelehnt
+    /// https://trackapi.nutritionix.com/v2/search/item?query=apple&x-app-id=dd00912d&x-app-key=0d5bcef6c4bba8ca8816901cb5cfa548
+    /// </summary>
+    /// <param name="foodName">Der Name des Lebensmittels, für das Kalorieninformationen benötigt werden.</param>
+    /// <returns>Eine Nachricht mit den Kalorieninformationen oder einem Fehler.</returns>
+    public async Task CallAPI(string foodName, int id)
+    {
+        try
+        {
+            foodName = "apple";
+            // API URL
+            var apiUrl = "https://trackapi.nutritionix.com/v2/natural/nutrients";
+
+            // Request-Body with foodName
+            var requestBody = new { query = foodName };
+
+            // Create HttpClient and set headers
+            using (var httpClient = new HttpClient())
+            {
+                // API keys
+                httpClient.DefaultRequestHeaders.Clear();
+                httpClient.DefaultRequestHeaders.Add("x-app-id", "dd00912d");  // Your App ID
+                httpClient.DefaultRequestHeaders.Add("x-app-key", "0d5bcef6c4bba8ca8816901cb5cfa548");  // Your App Key
+
+                // Send POST request
+                var response = await httpClient.PostAsJsonAsync(apiUrl, requestBody);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    // Deserialize the response to our custom model
+                    var nutritionData = await response.Content.ReadFromJsonAsync<NutritionResponse>();
+
+                    // Check if "Foods" is not null
+                    var foods = nutritionData?.Foods;
+                    if (foods != null && foods.Count > 0)
+                    {
+                        // Take the first food item from the list
+                        var food = foods[0];
+                        Console.WriteLine($"Found: {food.FoodName}, Calories: {food.NfCalories}");
+
+                        // SQL command to update the menu with calorie info
+                        string sqlCmd = $"UPDATE Menue SET kcal = {food.NfCalcium} WHERE  Menue_ID = {id}";                                               
+
+                        // Execute the SQL command
+                        await db.ExecuteCommandAsync(sqlCmd);
+
+                        Console.WriteLine("SQL query successfully executed with API data.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("No food data found.");
+                    }
+                }
+                else
+                {
+                    // Error if the API request fails
+                    string responseContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"API request failed: {response.StatusCode}, Content: {responseContent}");
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Error during API call: {e.Message}");
         }
     }
 }

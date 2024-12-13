@@ -170,27 +170,25 @@ namespace ZumGelbenBach
         /// </summary>
         /// <param name="sqlCommand"></param>
         /// <returns>Falls select als befehlt ausgeführt werden soll dann wird ein reader returned </returns>
-        public SqliteDataReader ExecuteCommand(string sqlCommand)
+        public async Task<SqliteDataReader> ExecuteCommandAsync(string sqlCommand)
         {
             try
             {
-                using (SqliteCommand cmd = new SqliteCommand(sqlCommand, conn))
+                var cmd = new SqliteCommand(sqlCommand, conn); // Do not use 'using' here
+                if (sqlCommand.Trim().StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (sqlCommand.Trim().StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return cmd.ExecuteReader();
-                    }
-                    else
-                    {
-                        cmd.ExecuteNonQuery();
-                        return null;
-                    }
+                    return await cmd.ExecuteReaderAsync(); // Return the reader directly
                 }
-
+                else
+                {
+                    await cmd.ExecuteNonQueryAsync();
+                    cmd.Dispose(); // Explicitly dispose for non-SELECT queries
+                    return null;
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Fehler in Methode: {new StackTrace().GetFrame(0).GetMethod().Name}" + " Fehlermeldung: {ex.Message}");
+                Console.WriteLine($"Fehler in Methode: {new StackTrace().GetFrame(0).GetMethod().Name}" + $" Fehlermeldung: {ex.Message}");
                 return null;
             }
         }
