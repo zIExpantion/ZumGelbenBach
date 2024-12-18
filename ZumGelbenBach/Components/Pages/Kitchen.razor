@@ -4,14 +4,68 @@
 @using ZumGelbenBach.Components.Models
 @inject SessionDataService sdS
 @inject NavigationManager manager
+@inject Authentifications auth
 
 
 <PageTitle>Küchenansicht</PageTitle>
-<div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0;" class="menu-item">
-    <div style="margin:0 auto;width:auto; flex-grow: 1; flex-direction: column; order: 2; padding-left: 15px; padding-right: 30px;">
+
+<style>
+    .divright{
+        float: right;
+        overflow: hidden;
+        order: 3;
+    }
+
+    .divleft{
+        margin: 0 auto;
+        width: auto;
+        flex-grow: 1;
+        flex-direction: column;
+        order: 2;
+        padding-left: 15px;
+        padding-right: 30px;
+    }
+
+    .divbox{
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 0;
+    }
+
+    .pitem{
+        padding-left: 15px;
+        margin: 5px 0 0;
+        font-size: 0.85rem;
+        color: #555;
+    }
+
+    td{
+        border: inset;
+        border-collapse: collapse;
+    }
+
+    h5{
+        margin: 0;
+        font-size: 1rem;
+        font-weight: bold;
+        margin-left: 0.5em;
+    }
+
+    .btnDone
+    {
+        font-size: 1em;
+        height: 1.5em;
+        padding-top: 0em;
+    }
+</style>
+
+<!-- HEADER -->
+<div class="menu-item divbox">
+    <div class="divleft">
         <h3>kitchen</h3>
     </div>
-    <div style="float:right; overflow: hidden; order: 3;">
+    <div class="divright">
         <label for="contentSelector">Ansicht:</label>
         <select name="contentSelector" id="contentSelector" @bind="SelectedOption">
             <option value="normal">Normal</option>
@@ -23,40 +77,42 @@
 
 <br />
 
-
+<!-- SubArea -->
 <div>
     @if (SelectedOption == "normal")
     {
         @foreach (var item in orderItems)
         {
             var itemId = item["ID"].ToString();
-            <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0;" class="menu-item">
-                <div style="margin:0 auto;width:auto; flex-grow: 1; flex-direction: column; order: 2; padding-left: 50px; padding-right: 30px;">
-                    <h5 style="margin: 0; font-size: 1rem; font-weight: normal;">@item["Bezeichnung"].ToString()</h5>
-
-                </div>
-                <div style="float:right; overflow: hidden; order: 3;">
-                    <button class="btn btn-danger" @onclick="() => accomplishOrder(item)" style="">Erledigt</button>
-                </div>
-            </div>
-
             <div>
-                <table style="width:100%;">
-                    <tr style="border:inset; border-collapse:collapse;">
-                        <td style="border:inset; border-collapse:collapse; vertical-align: top;">
-                            <p style="padding-left:15px; margin: 5px 0 0; font-size: 0.85rem; color: #555;">Anzahl: @item["Amount"].ToString()</p>
-                        </td>
-                        <td style="border:inset; border-collapse:collapse;">
-                            <p style="padding-left:15px; margin: 5px 0 0; font-size: 0.85rem; color: #555;">Zusatzinfo: @item["AdditionalInfo"].ToString()</p>
-                        </td>
-                        <td style="border:inset; border-collapse:collapse;">
-                            <p style="padding-left:15px; margin: 5px 0 0; font-size: 0.85rem; color: #555;">Tischnummer: @item["TableID"].ToString()</p>
-                        </td>
-                    </tr>
-                </table>
-            </div>
+                <div class="menu-item divbox">
+                    <div class="divleft">
+                        <h5>@item["Bezeichnung"].ToString()</h5>
 
-            <hr style="margin: 5px 0; border: none; border-bottom: 1px solid #ddd;" />
+                    </div>
+                    <div class="divright">
+                        <button class="btn btn-danger btnDone" @onclick="() => accomplishOrder(item)" style="">Erledigt</button>
+                    </div>
+                </div>
+
+                <div>
+                    <table style="width:100%;">
+                        <tr style="border:inset; border-collapse:collapse;">
+                            <td style="border:inset; border-collapse:collapse; vertical-align: top;">
+                                <p class="pitem">Anzahl: @item["Amount"].ToString()</p>
+                            </td>
+                            <td>
+                                <p class="pitem">Zusatzinfo: @item["AdditionalInfo"].ToString()</p>
+                            </td>
+                            <td>
+                                <p class="pitem">Tischnummer: @item["TableID"].ToString()</p>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <hr style="margin: 0px 10; margin-bottom: 0px; border: none; border-bottom: 1px solid #ddd;" />
+            </div>
         }
     }
 
@@ -64,21 +120,54 @@
     {
         @foreach(var item in Products)
         {
-            <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0;" class="menu-item">
-                <div style="margin:0 auto;width:auto; flex-grow: 1; flex-direction: column; order: 2; padding-left: 50px; padding-right: 30px;">
+            <div class="menu-item divbox">
+                <div class="divleft">
                     <p> @item.Key.ToString() </p>
                 </div>
-                <div style="float:right; overflow: hidden; order: 3;">
+                <div class="divright">
                     <p> @item.Value.ToString() </p>
                 </div>
             </div>
+            <hr style="margin: 5px 0; border: none; border-bottom: 1px solid #ddd;" />
         }
-        <p> hhhhh</p>
     }
 
     @if (SelectedOption == "byTable")
     {
+        @foreach(var table in tables)
+        {
+            <h3>@table.Key</h3>
+            <div class="menu-item divbox">
+                <div class="divleft">
+                    <p>Product</p>
+                </div>
+                <div class="divright">
+                    <p>Anzahl</p>
+                </div>
+            </div>
 
+            @foreach(var item in table.Value)
+            {
+                
+                <div class="menu-item divbox">
+                    <div class="divleft">
+                        <p>@item["Bezeichnung"]</p>
+                     
+                    </div>
+                    <div class="divright">
+                        <p>@item["Amount"]</p>
+                        
+                    </div>
+
+                </div>
+
+               // @foreach (var kvp in item)
+               // {
+               //     <p>@kvp.Key: @kvp.Value</p>
+               // }
+            }
+            <hr />
+        }
     }
 </div>
 
@@ -87,14 +176,13 @@
 
 
 @code {
-    //authorize
-    private bool IsAuthenticated = false;
 
     //normal
     private Dictionary<string, OrderItemState> orderItemstates = new Dictionary<string, OrderItemState>();
     private List<Dictionary<string, object>> orderItems = new List<Dictionary<string, object>>();
     //byProduct
     private Dictionary<string, int> Products = new Dictionary<string, int>();
+    private SortedDictionary<int, List<Dictionary<string, object>>> tables = new SortedDictionary<int, List<Dictionary<string, object>>>();
 
 
     private DBConnector dB = new(); // Globale Instanz von DBConnector
@@ -103,16 +191,17 @@
     protected override async Task OnInitializedAsync()
     {
         //Authorize
-        if (IsAuthenticated)
+        if (auth.login)
         {
             await GetDataAsync();
             await GetDataByProduct();
+            await GetDataByTable();
         }
         else{
             manager.NavigateTo("/login");
         }
 
-        
+
     }
 
 
@@ -161,19 +250,20 @@
             dB.updateOrderStatus(id);
             StateHasChanged(); //aktualisiert die UI
             GetDataByProduct();
+            GetDataByTable();
         }
         catch (Exception ex) {
             Console.WriteLine($"Error removing item: {ex.Message}");
         }
     }
 
-   private async Task GetDataByProduct()
-   {
+    private async Task GetDataByProduct()
+    {
         try{
 
             foreach (var v in orderItems)
             {
-                
+
                 if (!Products.Keys.Contains(v["Bezeichnung"]))
                 {
                     Products.Add(v["Bezeichnung"].ToString(), 1);
@@ -183,11 +273,36 @@
                 }
             }
         }
-      catch (Exception ex) {
+        catch (Exception ex) {
             Console.WriteLine($"Error loading data: {ex.Message}");
         }
 
-   }
-    
+    }
 
+    private async Task GetDataByTable()
+    {
+        try
+        {
+            foreach( var v in orderItems)
+            {
+                int vkey = int.Parse(v["TableID"].ToString());
+                if(!tables.Keys.Contains(vkey))
+                {
+                    tables.Add(vkey, new List<Dictionary<string, object>> { v });
+                }
+                else{
+                    tables[vkey].Add(v);
+                }
+
+            }
+
+           // tables = tables.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading data: {ex.Message}");
+        }
+
+    }
 }

@@ -10,6 +10,7 @@ builder.Services.AddScoped<SessionDataService>();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddSingleton<SessionDataService>();
+builder.Services.AddSingleton<Authentifications>();
 builder.Services.AddHttpClient();
 
 var app = builder.Build();
