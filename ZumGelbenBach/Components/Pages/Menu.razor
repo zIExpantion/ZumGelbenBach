@@ -8,14 +8,61 @@
 
 <PageTitle>menu</PageTitle>
 <link href="~/app.css" rel="stylesheet" />
+
+<style>
+    .headline{
+        font-family: 'Edwardian Script ITC';
+        font-size: 500%;
+        text-align: center;
+        margin-bottom: 100px;
+    }
+
+    .divright {
+        float: right;
+        width: 100px;
+        height: 100px;
+        overflow: hidden;
+        order: 3;
+    }
+
+    .divleft {
+        order: 1;
+    }
+
+    .divmid {
+        margin: 0 auto;
+        width: auto;
+        flex-grow: 1;
+        flex-direction: column;
+        order: 2;
+        padding-left: 50px;
+        padding-right: 30px;
+    }
+
+    .divinner {
+        margin: 0 auto;
+        width: auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .divbox {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .btnAdd {
+        background-color: @(!IsAnyItemSelected() ? "#404040" : "#007bff");
+        color: white;
+    }
+
+</style>
+
 <div>
-    <h1 style="font-family:'Edwardian Script ITC'; font-size:500%; text-align:center; margin-bottom: 100px;"> The Menu </h1>
+    <h1 class="headline"> The Menu </h1>
 </div>
-
-
-<!--<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>-->
-<!--<button class="btn btn-primary" @onclick="GetData">Load Menu</button>-->
-
 
 
 @if (menuItems != null && menuItems.Any())
@@ -23,36 +70,33 @@
     @foreach (var item in menuItems)
     {
         var itemId = item["Bezeichnung"].ToString() + item["Menue_ID"].ToString();
-        <div style="display: flex; align-items: center; justify-content: space-between;" id="@itemId" class="menu-item">
+        <div id="@itemId" class="menu-item divbox">
 
-
-            <!--<div id=@item["Bezeichnung"].ToString() class="menu-item">-->
-
-            <div style="float:right;width:100px; height:100px; overflow: hidden; order: 3;">
+            <div class="divright">
                 <img src=@item["Image"].ToString() alt="Menu Image" width="auto" height="100%" style="object-fit: cover;" />
             </div>
 
-            <div style="margin:0 auto;width:auto; flex-grow: 1; flex-direction: column; order: 2; padding-left: 50px; padding-right: 30px;">
-                <div style="margin: 0 auto; width: auto; display: flex; justify-content: space-between; align-items: center;">
+            <div class="divmid">
+                <div class="divinner">
                     <h4 style="margin: 0;">@item["Bezeichnung"].ToString()</h4>
                     <p style="text-align: right; margin: 0;"><b>@item["Preis"] €</b></p>
                 </div>
                 <p style="font-style:italic;">&nbsp;&nbsp;&nbsp;&nbsp; @item["Beschreibung"].ToString()</p>
             </div>
 
-            <div style="order: 1;">
+            <div class="divleft">
                 <input id="quantity_@item["Bezeichnung"].ToString()"
-                type="number"
-                placeholder="Quantity"
-                value="@menuItemStates[itemId].Quantity"
-                @oninput="e => OnQuantityChange(itemId, e.Value)"
-                style="transform: scale(0.75)" />
+                    type="number"
+                    placeholder="Quantity"
+                    value="@menuItemStates[itemId].Quantity"
+                    @oninput="e => OnQuantityChange(itemId, e.Value)"
+                    style="transform: scale(0.75)" />
 
                 <input id="select_@item["Bezeichnung"].ToString()"
-                type="checkbox"
-                checked="@menuItemStates[itemId].IsSelected"
-                @onchange="e => OnCheckboxChange(itemId, e.Value)"
-                style="transform: scale(1.5)" />
+                    type="checkbox"
+                    checked="@menuItemStates[itemId].IsSelected"
+                    @onchange="e => OnCheckboxChange(itemId, e.Value)"
+                    style="transform: scale(1.5)" />
 
             </div>
         </div>
@@ -60,7 +104,7 @@
         <hr />
     }
 
-    <button class="btn btn-primary" style=" background-color: @(!IsAnyItemSelected() ? "#404040" : "#007bff"); color: white;" @onclick="SubmitOrder" disabled="@(!IsAnyItemSelected())">Zu Bestellung hinzufügen</button>
+    <button class="btn btn-primary btnAdd" @onclick="SubmitOrder" disabled="@(!IsAnyItemSelected())">Zu Bestellung hinzufügen</button>
     <br />
     <br />
     <br />
@@ -85,16 +129,10 @@ else
     // Liste der Datenzeilen (jede Zeile ist ein Dictionary)
     private List<Dictionary<string, object>> menuItems = new List<Dictionary<string, object>>();
 
-    /*  private void IncrementCount()
-            {
-            currentCount++;
-        }*/
-
     protected override async Task OnInitializedAsync()
     {
-
-        await GetDataAsync(); // Automatically load menu data on page load
-        await GetCaloriesAsync(); // noch ein fehler findet keine Daten aktuell problem ist der Reader in GetCaloriesAsync
+        await GetDataAsync(); 
+        await GetCaloriesAsync();
         isDataLoaded = true;
     }
 
@@ -103,7 +141,6 @@ else
         try
         {
             var reader = db.ReadMenuWithImages("Menue", new[] { "Menue_ID", "Bezeichnung", "Beschreibung", "Preis", "Größe", "Images.Photo" }, "Image", "Images", "ImgID");
-
             menuItems.Clear();
 
             while (reader.Read())
@@ -124,34 +161,28 @@ else
                     { "Image", base64Image },
                     {"Menue_ID", reader["Menue_ID"]}
                 };
-                // if (row.TryGetValue("Preis").ToString().IndexOf("."))
 
                 // Setze Preis auf 2 Nachkommastellen
-                if (row.TryGetValue("Preis", out var preisValue))
-                {
-                    if (decimal.TryParse(preisValue.ToString(), out var preis))
-                    {
+                if (row.TryGetValue("Preis", out var preisValue)) {
+                    if (decimal.TryParse(preisValue.ToString(), out var preis)) {
                         row["Preis"] = preis.ToString("F2");
                     }
-                    else
-                    {
+                    else {
                         row["Preis"] = "0.00";
                     }
                 }
                 menuItems.Add(row);
 
                 var itemId = row["Bezeichnung"].ToString() + row["Menue_ID"].ToString();
-                menuItemStates[itemId] = new MenuItemState
-                    {
-                        Quantity = 0,
-                        IsSelected = false,
-                        dbID = row["Menue_ID"].ToString(),
-                        sProduktName = row["Bezeichnung"].ToString()
-                    };
+                menuItemStates[itemId] = new MenuItemState {
+                    Quantity = 0,
+                    IsSelected = false,
+                    dbID = row["Menue_ID"].ToString(),
+                    sProduktName = row["Bezeichnung"].ToString()
+                };
             }
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             Console.WriteLine($"Error loading data: {ex.Message}");
         }
     }
@@ -204,10 +235,7 @@ else
     private void AddItemToSession(String dbID, String id, int amount, String text, string sProductName)
     {
         // Beispiel: Füge ein neues Item mit einer eindeutigen ID zur Session hinzu
-        string newItemId = "New Item " + (menuItemStates.Count + 1);  // oder eine andere Logik für eine ID
-
-        //sdS.AddOrUpdateMenuItem(newItemId, 1, "Neues Produkt");
-
+        string newItemId = "New Item " + (menuItemStates.Count + 1);
         sdS.AddOrUpdateMenuItem(dbID, id, amount, text, sProductName);
     }
 
@@ -248,7 +276,6 @@ else
     /// <param name="value"></param>
     private void OnQuantityChange(string itemId, object value)
     {
-
         int quantity = int.TryParse(value.ToString(), out var result) ? result : 0;
 
         // Update vom Zustand
@@ -292,8 +319,7 @@ else
                 }
             }
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             Console.WriteLine("Fehlermeldung: " + e.Message);
         }
     }
@@ -340,12 +366,9 @@ else
                     {
                         // Take the first food item from the list
                         var food = foods[0];
-                        Console.WriteLine($"Found: {food.FoodName}, Calories: {food.NfCalories}");
-
-                        // SQL command to update the menu with calorie info
+                        //Console.WriteLine($"Found: {food.FoodName}, Calories: {food.NfCalories}");
                         string sqlCmd = $"UPDATE Menue SET kcal = {food.NfCalcium} WHERE  Menue_ID = {id}";                                               
 
-                        // Execute the SQL command
                         await db.ExecuteCommandAsync(sqlCmd);
 
                         Console.WriteLine("SQL query successfully executed with API data.");
@@ -359,12 +382,11 @@ else
                 {
                     // Error if the API request fails
                     string responseContent = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"API request failed: {response.StatusCode}, Content: {responseContent}");
+                    //Console.WriteLine($"API request failed: {response.StatusCode}, Content: {responseContent}");
                 }
             }
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             Console.WriteLine($"Error during API call: {e.Message}");
         }
     }
