@@ -22,7 +22,6 @@ a, .btn-link {
 }
 
 h1:focus {
-    outline: none;
 }
 
 .valid.modified:not([type=checkbox]) {
@@ -49,4 +48,24 @@ h1:focus {
 
 .darker-border-checkbox.form-check-input {
     border-color: #929292;
+}
+
+h1 {
+    font-family: 'Bradley Hand ITC';
+    text-align: center;       
+}
+.login-button {
+    font-family: 'Arial Rounded MT';
+    font-size: 1rem;
+    font-weight: bold;
+    padding: 10px 20px;
+    color: darkblue;
+    background-color: #ffcc00;
+    border: none;
+    border-radius: 8px;
+    text-align: center;
+    text-decoration: none;
+    box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.3); /* Schattierung */
+    transition: all 0.3s ease-in-out;
+    
 }
