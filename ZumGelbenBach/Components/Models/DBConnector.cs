@@ -335,7 +335,7 @@ namespace ZumGelbenBach
         }
 
 
-        private void updateOrderStatus(String id)
+        public void updateOrderStatus(String id)
         {
             SqliteCommand cmd = conn.CreateCommand();
             cmd.Connection = conn;

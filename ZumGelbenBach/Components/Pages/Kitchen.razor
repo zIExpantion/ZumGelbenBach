@@ -3,6 +3,7 @@
 @using ZumGelbenBach;
 @using ZumGelbenBach.Components.Models
 @inject SessionDataService sdS
+@inject NavigationManager manager
 
 
 <PageTitle>Küchenansicht</PageTitle>
@@ -61,7 +62,18 @@
 
     @if (SelectedOption == "byProduct")
     {
-
+        @foreach(var item in Products)
+        {
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0;" class="menu-item">
+                <div style="margin:0 auto;width:auto; flex-grow: 1; flex-direction: column; order: 2; padding-left: 50px; padding-right: 30px;">
+                    <p> @item.Key.ToString() </p>
+                </div>
+                <div style="float:right; overflow: hidden; order: 3;">
+                    <p> @item.Value.ToString() </p>
+                </div>
+            </div>
+        }
+        <p> hhhhh</p>
     }
 
     @if (SelectedOption == "byTable")
@@ -74,19 +86,33 @@
 
 
 
-
-
-
-
 @code {
+    //authorize
+    private bool IsAuthenticated = false;
+
+    //normal
     private Dictionary<string, OrderItemState> orderItemstates = new Dictionary<string, OrderItemState>();
     private List<Dictionary<string, object>> orderItems = new List<Dictionary<string, object>>();
+    //byProduct
+    private Dictionary<string, int> Products = new Dictionary<string, int>();
+
+
     private DBConnector dB = new(); // Globale Instanz von DBConnector
     private string SelectedOption { get; set; } = "normal"; // Default value
 
     protected override async Task OnInitializedAsync()
     {
-        await GetDataAsync();
+        //Authorize
+        if (IsAuthenticated)
+        {
+            await GetDataAsync();
+            await GetDataByProduct();
+        }
+        else{
+            manager.NavigateTo("/login");
+        }
+
+        
     }
 
 
@@ -132,14 +158,36 @@
         try {            
             String id = item["ID"].ToString();  
             orderItems.Remove(item);
+            dB.updateOrderStatus(id);
             StateHasChanged(); //aktualisiert die UI
+            GetDataByProduct();
         }
         catch (Exception ex) {
             Console.WriteLine($"Error removing item: {ex.Message}");
         }
     }
 
-   
+   private async Task GetDataByProduct()
+   {
+        try{
+
+            foreach (var v in orderItems)
+            {
+                
+                if (!Products.Keys.Contains(v["Bezeichnung"]))
+                {
+                    Products.Add(v["Bezeichnung"].ToString(), 1);
+                }
+                else{
+                    Products[v["Bezeichnung"].ToString()] = Products[v["Bezeichnung"].ToString()] + 1;
+                }
+            }
+        }
+      catch (Exception ex) {
+            Console.WriteLine($"Error loading data: {ex.Message}");
+        }
+
+   }
     
 
 }

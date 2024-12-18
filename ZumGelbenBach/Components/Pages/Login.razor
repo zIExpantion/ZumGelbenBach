@@ -2,6 +2,7 @@
 @rendermode InteractiveServer
 @using ZumGelbenBach;
 @using ZumGelbenBach.Components.Models
+@inject Authentification auth
 
 
 <PageTitle>Login</PageTitle>
@@ -29,15 +30,18 @@
             if (Username == "kueche" && Password == "hallo")
             {
                 await JSRuntime.InvokeVoidAsync("confirm", "Login successful");
+                auth.login = true;
                 navigation.NavigateTo("/kitchen");
             }
             else
             {
+                auth.login = false;
                 await JSRuntime.InvokeVoidAsync("confirm", "Invalid username or password");
             }
         }
         else
         {
+            auth.login = false;
             await JSRuntime.InvokeVoidAsync("confirm", "Please enter both username and password");
         }
     }
