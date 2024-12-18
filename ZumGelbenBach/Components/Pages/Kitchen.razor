@@ -6,8 +6,19 @@
 
 
 <PageTitle>Küchenansicht</PageTitle>
+<div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0;" class="menu-item">
+    <div style="margin:0 auto;width:auto; flex-grow: 1; flex-direction: column; order: 2; padding-left: 15px; padding-right: 30px;">
+        <h3>kitchen</h3>
+    </div>
+    <div style="float:right; overflow: hidden; order: 3;">
+        <select name="type" id="type">
+            <option value="normal">Normal</option>
+            <option value="byProduct">bei Produkt</option>
+            <option value="byTable">bei Tisch</option>
+        </select>
+    </div>
+</div>
 
-<h3>kitchen</h3>
 <br />
 
 
@@ -19,11 +30,7 @@
     <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0;" class="menu-item">
         <div style="margin:0 auto;width:auto; flex-grow: 1; flex-direction: column; order: 2; padding-left: 50px; padding-right: 30px;">
             <h5 style="margin: 0; font-size: 1rem; font-weight: normal;">@item["Bezeichnung"].ToString()</h5>
-            
-            
-            
-            
-               
+                      
         </div>
         <div style="float:right; overflow: hidden; order: 3;">
             <button class="btn btn-danger" @onclick="() => accomplishOrder(item)" style="">Erledigt</button>
