@@ -1,0 +1,37 @@
+﻿@page "/Tester"
+@rendermode InteractiveServer
+@using ZumGelbenBach;
+@using ZumGelbenBach.Components.Models
+@using System.Text.Json;
+
+
+<h3>Dropdown Content Switcher</h3>
+
+<!-- Dropdown -->
+<label for="contentSelector">Choose an option:</label>
+<select id="contentSelector" @bind="SelectedOption">
+    <option value="Option1">Option 1</option>
+    <option value="Option2">Option 2</option>
+    <option value="Option3">Option 3</option>
+</select>
+
+<!-- Content based on selection -->
+<div>
+    @if (SelectedOption == "Option1")
+    {
+        <p>You selected Option 1. Here's the content for Option 1!</p>
+    }
+    else if (SelectedOption == "Option2")
+    {
+        <p>You selected Option 2. Here's the content for Option 2!</p>
+    }
+    else if (SelectedOption == "Option3")
+    {
+        <p>You selected Option 3. Here's the content for Option 3!</p>
+    }
+</div>
+
+@code {
+    // Property to bind the selected option
+    private string SelectedOption { get; set; } = "Option1"; // Default value
+}
