@@ -11,23 +11,46 @@
 <br />
 
 
-<div>
-    @foreach (var item in orderItems)
-    {
-        var itemId = item["ID"].ToString();
-        <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0;" id="@itemId" class="menu-item">
-            <div style="flex-grow: 1; padding-left: 10px;">
-                <h5 style="margin: 0; font-size: 1rem; font-weight: normal;">@item["Bezeichnung"].ToString()</h5>
-                <p style="margin: 5px 0 0; font-size: 0.85rem; color: #555;">Anzahl: @item["Amount"].ToString()</p>
-                <p style="margin: 5px 0 0; font-size: 0.85rem; color: #555;">Zusatzinfo: @item["AdditionalInfo"].ToString()</p>
-                <p style="margin: 5px 0 0; font-size: 0.85rem; color: #555;">Tischnummer: @item["TableID"].ToString()</p>
-                <button class="btn btn-danger" @onclick="() => accomplishOrder(item)">Erledigt</button>
-            </div>
-        </div>
-        <hr style="margin: 5px 0; border: none; border-bottom: 1px solid #ddd;" />
 
-    }
-</div>
+@foreach (var item in orderItems)
+{
+    
+    var itemId = item["ID"].ToString();
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0;" class="menu-item">
+        <div style="margin:0 auto;width:auto; flex-grow: 1; flex-direction: column; order: 2; padding-left: 50px; padding-right: 30px;">
+            <h5 style="margin: 0; font-size: 1rem; font-weight: normal;">@item["Bezeichnung"].ToString()</h5>
+            
+            
+            
+            
+               
+        </div>
+        <div style="float:right; overflow: hidden; order: 3;">
+            <button class="btn btn-danger" @onclick="() => accomplishOrder(item)" style="">Erledigt</button>
+        </div>
+        
+    </div>
+    <div>
+        <table style="width:100%;">
+            <tr style="border:inset; border-collapse:collapse;">
+                <td style="border:inset; border-collapse:collapse; vertical-align: top;">
+                    <p style="padding-left:15px; margin: 5px 0 0; font-size: 0.85rem; color: #555;">Anzahl: @item["Amount"].ToString()</p>
+                </td>
+                <td style="border:inset; border-collapse:collapse;">
+                    <p style="padding-left:15px; margin: 5px 0 0; font-size: 0.85rem; color: #555;">Zusatzinfo: @item["AdditionalInfo"].ToString()</p>
+                </td>
+                <td style="border:inset; border-collapse:collapse;">
+                    <p style="padding-left:15px; margin: 5px 0 0; font-size: 0.85rem; color: #555;">Tischnummer: @item["TableID"].ToString()</p>
+                </td>
+            </tr>
+        </table>
+
+    </div>
+    
+    <hr style="margin: 5px 0; border: none; border-bottom: 1px solid #ddd;" />
+    
+}
+
 
 
 @code {
