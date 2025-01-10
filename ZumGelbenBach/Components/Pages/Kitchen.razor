@@ -10,60 +10,122 @@
 <PageTitle>Küchenansicht</PageTitle>
 
 <style>
+
+    html, body {
+        overflow-y: scroll; /* Always show vertical scrollbar */
+    }
+
+    .headline {
+        font-family: 'Edwardian Script ITC';
+        font-size: 500%;
+        text-align: center;
+        margin-bottom: 100px;
+    }
+
     .divright{
-        float: right;
-        overflow: hidden;
-        order: 3;
+    float: right;
+    overflow: hidden;
+    order: 3;
     }
 
     .divleft{
-        margin: 0 auto;
-        width: auto;
-        flex-grow: 1;
-        flex-direction: column;
-        order: 2;
-        padding-left: 15px;
-        padding-right: 30px;
+    margin: 0 auto;
+    width: auto;
+    flex-grow: 1;
+    flex-direction: column;
+    order: 2;
+    padding-left: 15px;
+    padding-right: 30px;
     }
 
     .divbox{
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 10px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
     }
 
     .pitem{
-        padding-left: 15px;
-        margin: 5px 0 0;
-        font-size: 0.85rem;
-        color: #555;
+    padding-left: 15px;
+    margin: 5px 0 0;
+    font-size: 0.85rem;
+    color: #555;
     }
 
     td{
-        border: inset;
-        border-collapse: collapse;
+    border: inset;
+    border-collapse: collapse;
     }
 
     h5{
-        margin: 0;
-        font-size: 1rem;
-        font-weight: bold;
-        margin-left: 0.5em;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: bold;
+    margin-left: 0.5em;
     }
 
     .btnDone
     {
-        font-size: 1em;
-        height: 1.5em;
-        padding-top: 0em;
+    font-size: 1em;
+    height: 1.8em;
+    padding: 0em;
+    padding-top: 0em;
+
+
     }
+
+    #contentSelector {
+    padding: 0.5em 1em;
+    font-size: 1em;
+    color: #333;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    #contentSelector:hover {
+    background-color: #eaeaea;
+    border-color: #bbb;
+    }
+
+    #contentSelector:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0px 0px 5px rgba(0, 123, 255, 0.5);
+    }
+
+    table {
+    width: 100%;
+    border-collapse: collapse; /* Ensure borders are merged correctly */
+    table-layout: fixed; /* Enforce equal column widths */
+    }
+
+    tr {
+    border-bottom: 1px solid #ddd; /* Add a bottom border to rows */
+    }
+
+    td {
+    border: 1px solid #ccc; /* Ensure every cell has borders */
+    padding: 8px;
+    text-align: left;
+    vertical-align: top;
+    }
+
+    td:nth-child(1),
+    td:nth-child(2),
+    td:nth-child(3) {
+    width: 33%; /* Distribute columns evenly */
+    }
+
 </style>
 
 <!-- HEADER -->
 <div class="menu-item divbox">
     <div class="divleft">
-        <h3>kitchen</h3>
+        <h1 class="headline"> Kitchen </h1>
     </div>
     <div class="divright">
         <label for="contentSelector">Ansicht:</label>
@@ -91,7 +153,7 @@
 
                     </div>
                     <div class="divright">
-                        <button class="btn btn-danger btnDone" @onclick="() => accomplishOrder(item)" style="">Erledigt</button>
+                        <button class="btn btn-danger btnDone" @onclick="() => accomplishOrder(item)">Erledigt</button>
                     </div>
                 </div>
 
@@ -101,7 +163,7 @@
                             <td style="border:inset; border-collapse:collapse; vertical-align: top;">
                                 <p class="pitem">Anzahl: @item["Amount"].ToString()</p>
                             </td>
-                            <td>
+                            <td style="border:inset; border-collapse:collapse; vertical-align: top;">
                                 <p class="pitem">Zusatzinfo: @item["AdditionalInfo"].ToString()</p>
                             </td>
                             <td>
@@ -139,32 +201,32 @@
             <h3>@table.Key</h3>
             <div class="menu-item divbox">
                 <div class="divleft">
-                    <p>Product</p>
+                    <p><b>Product</b></p>
                 </div>
                 <div class="divright">
-                    <p>Anzahl</p>
+                    <p><b>Anzahl</b></p>
                 </div>
             </div>
 
             @foreach(var item in table.Value)
             {
-                
+
                 <div class="menu-item divbox">
                     <div class="divleft">
                         <p>@item["Bezeichnung"]</p>
-                     
+
                     </div>
                     <div class="divright">
                         <p>@item["Amount"]</p>
-                        
+
                     </div>
 
                 </div>
 
-               // @foreach (var kvp in item)
-               // {
-               //     <p>@kvp.Key: @kvp.Value</p>
-               // }
+                // @foreach (var kvp in item)
+                // {
+                //     <p>@kvp.Key: @kvp.Value</p>
+            // }
             }
             <hr />
         }
@@ -186,7 +248,38 @@
 
 
     private DBConnector dB = new(); // Globale Instanz von DBConnector
-    private string SelectedOption { get; set; } = "normal"; // Default value
+    private string _selectedOption = "normal"; // Default value
+    private string SelectedOption
+    {
+        get => _selectedOption;
+        set
+        {
+            if (_selectedOption != value)
+            {
+                _selectedOption = value;
+                OnSelectedOptionChanged();
+            }
+        }
+    }
+
+
+    private void OnSelectedOptionChanged()
+    {
+        StateHasChanged(); //aktualisiert die UI
+        GetDataByProduct();
+        GetDataByTable();
+    }
+
+
+
+
+
+
+
+
+
+
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -261,6 +354,8 @@
     {
         try{
 
+            Products.Clear();
+
             foreach (var v in orderItems)
             {
 
@@ -283,21 +378,39 @@
     {
         try
         {
-            foreach( var v in orderItems)
+            // Clear existing data to avoid duplication
+            tables.Clear();
+
+            foreach (var v in orderItems)
             {
                 int vkey = int.Parse(v["TableID"].ToString());
-                if(!tables.Keys.Contains(vkey))
+
+                // Check if the table ID already exists in the dictionary
+                if (!tables.ContainsKey(vkey))
                 {
+                    // If not, add a new entry with the current item
                     tables.Add(vkey, new List<Dictionary<string, object>> { v });
                 }
-                else{
-                    tables[vkey].Add(v);
+                else
+                {
+                    // If the table already exists, check if the item (by "Bezeichnung") is already in the list
+                    var existingItem = tables[vkey].FirstOrDefault(item =>
+                        item["Bezeichnung"].ToString() == v["Bezeichnung"].ToString());
+
+                    if (existingItem != null)
+                    {
+                        // If the item exists, increment its "Amount" value
+                        int currentAmount = int.Parse(existingItem["Amount"].ToString());
+                        int newAmount = currentAmount + int.Parse(v["Amount"].ToString());
+                        existingItem["Amount"] = newAmount; // Update the value in the dictionary
+                    }
+                    else
+                    {
+                        // If the item does not exist, add it to the list
+                        tables[vkey].Add(v);
+                    }
                 }
-
             }
-
-           // tables = tables.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-
         }
         catch (Exception ex)
         {
