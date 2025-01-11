@@ -1,32 +1,74 @@
-﻿namespace ZumGelbenBach.Components.Models
+﻿using System.Text.Json.Serialization;
+
+public class NutritionResponse
 {
-    using System;
-    using System.Collections.Generic;
+    public List<CommonFood> Common { get; set; }
+    public List<BrandedFood> Branded { get; set; }
+}
 
-    public class NutritionResponse
-    {
-        public List<FoodItem>? Foods { get; set; } // Liste der Lebensmittel, die von der API zurückgegeben wird
+public class CommonFood
+{
+    [JsonPropertyName("tag_id")]  // Falls die JSON das Attribut anders nennt
+    public string TagId { get; set; }
 
-        public class FoodItem
-        {
-            public string? FoodName { get; set; } // Name des Lebensmittels
-            public int ServingQty { get; set; } // Portionsgröße (Menge)
-            public string? ServingUnit { get; set; } // Maßeinheit (z.B. "medium", "cup")
-            public double ServingWeightGrams { get; set; } // Portionsgewicht in Gramm
-            public double NfCalories { get; set; } // Kalorien pro Portion
-            public double NfTotalFat { get; set; } // Gesamtfett in Gramm
-            public double NfSaturatedFat { get; set; } // Gesättigte Fette in Gramm
-            public double NfCholesterol { get; set; } // Cholesterin in Milligramm
-            public double NfSodium { get; set; } // Natrium in Milligramm
-            public double NfTotalCarbohydrate { get; set; } // Gesamt Kohlenhydrate in Gramm
-            public double NfDietaryFiber { get; set; } // Ballaststoffe in Gramm
-            public double NfSugars { get; set; } // Zucker in Gramm
-            public double NfProtein { get; set; } // Proteine in Gramm
-            public double NfVitaminD { get; set; } // Vitamin D in Prozent
-            public double NfCalcium { get; set; } // Kalzium in Milligramm
-            public double NfIron { get; set; } // Eisen in Milligramm
-            public double NfPotassium { get; set; } // Kalium in Milligramm
-        }
-    }
+    [JsonPropertyName("tag_name")]
+    public string TagName { get; set; }
 
+    [JsonPropertyName("serving_qty")]
+    public double ServingQty { get; set; }
+
+    [JsonPropertyName("serving_unit")]
+    public string ServingUnit { get; set; }
+
+    [JsonPropertyName("common_type")]
+    public string CommonType { get; set; }
+
+    [JsonPropertyName("food_name")]
+    public string FoodName { get; set; }
+
+    public Photo Photo { get; set; }
+
+    public string Locale { get; set; }
+}
+
+public class BrandedFood
+{
+    [JsonPropertyName("serving_qty")]
+    public double ServingQty { get; set; }
+
+    public int Region { get; set; }
+
+    [JsonPropertyName("nf_calories")]
+    public double? NfCalories { get; set; }
+
+    [JsonPropertyName("nix_brand_id")]
+    public string NixBrandId { get; set; }
+
+    public Photo Photo { get; set; }
+
+    [JsonPropertyName("nix_item_id")]
+    public string NixItemId { get; set; }
+
+    [JsonPropertyName("food_name")]
+    public string FoodName { get; set; }
+
+    public int BrandType { get; set; }
+
+    [JsonPropertyName("brand_name_item_name")]
+    public string BrandNameItemName { get; set; }
+
+    [JsonPropertyName("serving_unit")]
+    public string ServingUnit { get; set; }
+
+    [JsonPropertyName("brand_name")]
+    public string BrandName { get; set; }
+
+    public string Locale { get; set; }
+}
+
+public class Photo
+{
+    public string Thumb { get; set; }
+    public string Highres { get; set; }
+    public bool IsUserUploaded { get; set; }
 }

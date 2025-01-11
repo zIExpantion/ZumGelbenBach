@@ -11,51 +11,51 @@
 
 <style>
     .headline{
-        font-family: 'Edwardian Script ITC';
-        font-size: 500%;
-        text-align: center;
-        margin-bottom: 100px;
+    font-family: 'Edwardian Script ITC';
+    font-size: 500%;
+    text-align: center;
+    margin-bottom: 100px;
     }
 
     .divright {
-        float: right;
-        width: 100px;
-        height: 100px;
-        overflow: hidden;
-        order: 3;
+    float: right;
+    width: 100px;
+    height: 100px;
+    overflow: hidden;
+    order: 3;
     }
 
     .divleft {
-        order: 1;
+    order: 1;
     }
 
     .divmid {
-        margin: 0 auto;
-        width: auto;
-        flex-grow: 1;
-        flex-direction: column;
-        order: 2;
-        padding-left: 50px;
-        padding-right: 30px;
+    margin: 0 auto;
+    width: auto;
+    flex-grow: 1;
+    flex-direction: column;
+    order: 2;
+    padding-left: 50px;
+    padding-right: 30px;
     }
 
     .divinner {
-        margin: 0 auto;
-        width: auto;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+    margin: 0 auto;
+    width: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     }
 
     .divbox {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     }
 
     .btnAdd {
-        background-color: @(!IsAnyItemSelected() ? "#404040" : "#007bff");
-        color: white;
+    background-color: @(!IsAnyItemSelected() ? "#404040" : "#007bff");
+    color: white;
     }
 
 </style>
@@ -86,17 +86,17 @@
 
             <div class="divleft">
                 <input id="quantity_@item["Bezeichnung"].ToString()"
-                    type="number"
-                    placeholder="Quantity"
-                    value="@menuItemStates[itemId].Quantity"
-                    @oninput="e => OnQuantityChange(itemId, e.Value)"
-                    style="transform: scale(0.75)" />
+                type="number"
+                placeholder="Quantity"
+                value="@menuItemStates[itemId].Quantity"
+                @oninput="e => OnQuantityChange(itemId, e.Value)"
+                style="transform: scale(0.75)" />
 
                 <input id="select_@item["Bezeichnung"].ToString()"
-                    type="checkbox"
-                    checked="@menuItemStates[itemId].IsSelected"
-                    @onchange="e => OnCheckboxChange(itemId, e.Value)"
-                    style="transform: scale(1.5)" />
+                type="checkbox"
+                checked="@menuItemStates[itemId].IsSelected"
+                @onchange="e => OnCheckboxChange(itemId, e.Value)"
+                style="transform: scale(1.5)" />
 
             </div>
         </div>
@@ -308,7 +308,7 @@ else
                     int id = reader["Menue_ID"] != DBNull.Value ? Convert.ToInt32(reader["Menue_ID"]) : 0;
                     object kcalValue = reader["kcal"];
 
-                    if (kcalValue == DBNull.Value || string.IsNullOrWhiteSpace(kcalValue.ToString()))
+                    if (kcalValue == DBNull.Value || string.IsNullOrWhiteSpace(kcalValue.ToString())||kcalValue.ToString() == "0")
                     {
                         await CallAPI(bezeichnung, id);
                     }
@@ -327,51 +327,72 @@ else
 
     /// <summary>
     /// Ruft die Nutritionix-API auf, um Kalorieninformationen für ein Lebensmittel zu erhalten.
-    /// https://trackapi.nutritionix.com/v2/search/item?upc=49000000450&x-app-id=dd00912d&x-app-key=0d5bcef6c4bba8ca8816901cb5cfa548 
+    /// https://trackapi.nutritionix.com/v2/search/item?upc=49000000450&x-app-id=dd00912d&x-app-key=0d5bcef6c4bba8ca8816901cb5cfa548
     /// query also die suche nach einem gericht nach namen wird von der api abgelehnt
     /// https://trackapi.nutritionix.com/v2/search/item?query=apple&x-app-id=dd00912d&x-app-key=0d5bcef6c4bba8ca8816901cb5cfa548
     /// </summary>
     /// <param name="foodName">Der Name des Lebensmittels, für das Kalorieninformationen benötigt werden.</param>
     /// <returns>Eine Nachricht mit den Kalorieninformationen oder einem Fehler.</returns>
-    public async Task CallAPI(string foodName, int id)
+    public async Task CallAPI(string foodName,int id)
     {
         try
         {
-            foodName = "apple";
-            // API URL
-            var apiUrl = "https://trackapi.nutritionix.com/v2/natural/nutrients";
+            // Verwende den übergebenen foodName, falls nötig
+            var apiUrl = $"https://trackapi.nutritionix.com/v2/search/instant?query={Uri.EscapeDataString(foodName)}";
 
-            // Request-Body with foodName
-            var requestBody = new { query = foodName };
+            Console.WriteLine($"API URL: {apiUrl}");  // Überprüfen, ob die URL richtig ist
 
-            // Create HttpClient and set headers
+            // HttpClient einrichten und Header setzen
             using (var httpClient = new HttpClient())
             {
-                // API keys
+                // API-Keys
                 httpClient.DefaultRequestHeaders.Clear();
-                httpClient.DefaultRequestHeaders.Add("x-app-id", "dd00912d");  // Your App ID
-                httpClient.DefaultRequestHeaders.Add("x-app-key", "0d5bcef6c4bba8ca8816901cb5cfa548");  // Your App Key
+                httpClient.DefaultRequestHeaders.Add("x-app-id", "dd00912d");  // Deine App ID
+                httpClient.DefaultRequestHeaders.Add("x-app-key", "0d5bcef6c4bba8ca8816901cb5cfa548");  // Dein App Key
 
-                // Send POST request
-                var response = await httpClient.PostAsJsonAsync(apiUrl, requestBody);
+                // GET-Anfrage senden
+                var response = await httpClient.GetAsync(apiUrl);
+
+                
 
                 if (response.IsSuccessStatusCode)
                 {
-                    // Deserialize the response to our custom model
+                    // Antwort als String lesen
+                    var responseBody = await response.Content.ReadAsStringAsync();
+                   Console.WriteLine("API Response: " + responseBody); // Antwort protokollieren
+
                     var nutritionData = await response.Content.ReadFromJsonAsync<NutritionResponse>();
 
-                    // Check if "Foods" is not null
-                    var foods = nutritionData?.Foods;
-                    if (foods != null && foods.Count > 0)
+
+                    // Antwort des APIs in ein benutzerdefiniertes Modell deserialisieren
+                    //var nutritionData = JsonSerializer.Deserialize<NutritionResponse>(responseBody);
+
+                    //var foods = nutritionData?.Common ?? new List<NutritionResponse.FoodItem>();
+                    var brandedFoods = nutritionData?.Branded ?? new List<BrandedFood>();
+
+
+                    if (brandedFoods != null && brandedFoods.Count > 0)
                     {
-                        // Take the first food item from the list
-                        var food = foods[0];
-                        //Console.WriteLine($"Found: {food.FoodName}, Calories: {food.NfCalories}");
-                        string sqlCmd = $"UPDATE Menue SET kcal = {food.NfCalcium} WHERE  Menue_ID = {id}";                                               
+                        // Filtern der Lebensmittel mit "nf_calories"
+                        var brandedFoodsWithCalories = brandedFoods
+                        .Where(food => food.NfCalories.HasValue && food.NfCalories.Value > 0);
 
-                        await db.ExecuteCommandAsync(sqlCmd);
+                        if (brandedFoodsWithCalories.Any())
+                        {
+                            // Durchschnitt der Kalorien berechnen
+                            double averageCalories = Math.Round(brandedFoodsWithCalories
+                                                        .Average(food => food.NfCalories.Value), 2);  // Entpacke den Nullable-Wert mit .Value
 
-                        Console.WriteLine("SQL query successfully executed with API data.");
+                            // SQL-Update durchführen, um den Durchschnitt in die Tabelle zu setzen
+                            string sqlCmd = $"UPDATE Menue SET kcal = {averageCalories} WHERE Bezeichnung = '{foodName}'and Menue_ID = {id}";
+                            await db.ExecuteCommandAsync(sqlCmd);
+
+                            Console.WriteLine("SQL query successfully executed with average calorie data.");
+                        }
+                        else
+                        {
+                            Console.WriteLine("No branded food data with valid calories found.");
+                        }
                     }
                     else
                     {
@@ -380,14 +401,17 @@ else
                 }
                 else
                 {
-                    // Error if the API request fails
+                    // Fehler bei der API-Anfrage
                     string responseContent = await response.Content.ReadAsStringAsync();
-                    //Console.WriteLine($"API request failed: {response.StatusCode}, Content: {responseContent}");
+                    Console.WriteLine($"API request failed: {response.StatusCode}, Content: {responseContent}");
                 }
             }
         }
-        catch (Exception e) {
+        catch (Exception e)
+        {
+            // Fehlerbehandlung
             Console.WriteLine($"Error during API call: {e.Message}");
         }
     }
+
 }
