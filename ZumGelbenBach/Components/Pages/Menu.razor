@@ -381,8 +381,9 @@ else
                         {
                             // Durchschnitt der Kalorien berechnen
                             double averageCalories = Math.Round(brandedFoodsWithCalories
-                                                        .Average(food => food.NfCalories.Value), 2);  // Entpacke den Nullable-Wert mit .Value
+                                                        .Average(food => food.NfCalories.Value));  // Entpacke den Nullable-Wert mit .Value
 
+                            
                             // SQL-Update durchführen, um den Durchschnitt in die Tabelle zu setzen
                             string sqlCmd = $"UPDATE Menue SET kcal = {averageCalories} WHERE Bezeichnung = '{foodName}'and Menue_ID = {id}";
                             await db.ExecuteCommandAsync(sqlCmd);
