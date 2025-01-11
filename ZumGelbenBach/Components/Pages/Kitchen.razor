@@ -11,23 +11,23 @@
 
 <style>
     html, body {
-        margin: 0;
-        padding: 0;
-        overflow: hidden; /* Prevent page-level scrolling */
-        height: 100vh; /* Ensure the body takes the full viewport height */
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Prevent page-level scrolling */
+    height: 100vh; /* Ensure the body takes the full viewport height */
     }
 
     .page-container {
-        display: flex;
-        flex-direction: column;
-        height: 100%; /* Full height of the viewport */
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Full height of the viewport */
     }
 
     .headline {
-        font-family: 'Edwardian Script ITC';
-        font-size: 500%;
-        text-align: center;
-        margin-bottom: 100px;
+    font-family: 'Edwardian Script ITC';
+    font-size: 500%;
+    text-align: center;
+    margin-bottom: 100px;
     }
 
     .divright{
@@ -130,52 +130,52 @@
 
 
     .scrollable-content {
-        display: flex;
-        flex: 1 1 auto;
-        flex-direction: column;
-        align-items: stretch;
-        justify-content: flex-start;
-        height: calc(100vh - 350px); /* Adjust based on your header/footer height */
-        overflow-y: auto; /* Enable scrolling only for this element */
-        padding: 10px;
-        background-color: #f8f9fa; /* Optional background for clarity */
-        box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1); /* Optional shadow */
-        gap: 10px; /* Add spacing between child elements */
-        background-color: #a9a9a9;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    height: calc(100vh - 350px); /* Adjust based on your header/footer height */
+    overflow-y: auto; /* Enable scrolling only for this element */
+    padding: 10px;
+    background-color: #f8f9fa; /* Optional background for clarity */
+    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1); /* Optional shadow */
+    gap: 10px; /* Add spacing between child elements */
+    background-color: #a9a9a9;
 
-        
+
     }
 
     .page-container {
-        display: flex;
-        flex-direction: column;
-        height: 80%; /* Full height of the viewport */
+    display: flex;
+    flex-direction: column;
+    height: 80%; /* Full height of the viewport */
     }
 
     /* Custom Scrollbar Style */
     .scrollable-content::-webkit-scrollbar {
-        width: 12px; /* Width of the scrollbar */
+    width: 12px; /* Width of the scrollbar */
     }
 
     .scrollable-content::-webkit-scrollbar-track {
-        background: #eaeaea; /* Background of the scrollbar track */
-        border-radius: 10px; /* Rounded corners for the track */
+    background: #eaeaea; /* Background of the scrollbar track */
+    border-radius: 10px; /* Rounded corners for the track */
     }
 
     .scrollable-content::-webkit-scrollbar-thumb {
-        background-color: #555; /* Color of the scrollbar thumb */
-        border-radius: 10px; /* Rounded corners for the thumb */
-        border: 3px solid #eaeaea; /* Adds spacing around the thumb */
+    background-color: #555; /* Color of the scrollbar thumb */
+    border-radius: 10px; /* Rounded corners for the thumb */
+    border: 3px solid #eaeaea; /* Adds spacing around the thumb */
     }
 
-        .scrollable-content::-webkit-scrollbar-thumb:hover {
-            background-color: #333; /* Darker thumb color on hover */
-        }
+    .scrollable-content::-webkit-scrollbar-thumb:hover {
+    background-color: #333; /* Darker thumb color on hover */
+    }
 
     /* For Firefox */
     .scrollable-content {
-        scrollbar-width: thin; /* Makes the scrollbar thinner */
-        scrollbar-color: #555 #eaeaea; /* Thumb color and track color */
+    scrollbar-width: thin; /* Makes the scrollbar thinner */
+    scrollbar-color: #555 #eaeaea; /* Thumb color and track color */
     }
 
 </style>
@@ -285,7 +285,7 @@
                     // @foreach (var kvp in item)
                     // {
                     //     <p>@kvp.Key: @kvp.Value</p>
-                // }
+                    // }
                 }
                 <hr />
             }
@@ -316,17 +316,30 @@
             if (_selectedOption != value)
             {
                 _selectedOption = value;
-                OnSelectedOptionChanged();
+                OnSelectedOptionChanged(_selectedOption);
             }
         }
     }
 
 
-    private void OnSelectedOptionChanged()
+    private void OnSelectedOptionChanged(string para)
     {
+        if (para == "normal")
+        {
+
+        }
+        if (para == "byTable")
+        {
+            GetDataByTable();
+        }
+        if (para == "byProduct")
+        {
+            GetDataByProduct();
+        }
+
+
+
         StateHasChanged(); //aktualisiert die UI
-        GetDataByProduct();
-        GetDataByTable();
     }
 
 
@@ -349,8 +362,13 @@
     private async Task GetDataAsync()
     {
         try {
+
+
+
             var reader = dB.ReadOrders("Orders", new[] { "OrderID", "TableNumber", "Product", "AdditionalInfo", "Amount", "ProductName" , "Erledigt"});
+            orderItemstates.Clear();
             orderItems.Clear();
+
 
             while (reader.Read())
             {
@@ -401,20 +419,14 @@
     private async Task GetDataByProduct()
     {
         try{
-
             Products.Clear();
 
-            foreach (var v in orderItems)
-            {
-
-                if (!Products.Keys.Contains(v["Bezeichnung"]))
-                {
-                    Products.Add(v["Bezeichnung"].ToString(), 1);
-                }
-                else{
-                    Products[v["Bezeichnung"].ToString()] = Products[v["Bezeichnung"].ToString()] + Products[v["Amount"].ToString()];
-                }
-            }
+            Products = orderItems
+            .GroupBy(item => item["Bezeichnung"].ToString())
+            .ToDictionary(
+                group => group.Key,
+                group => group.Sum(item => int.Parse(item["Amount"].ToString()))
+            );
         }
         catch (Exception ex) {
             Console.WriteLine($"Error loading data: {ex.Message}");
@@ -429,33 +441,37 @@
             // Clear existing data to avoid duplication
             tables.Clear();
 
+
+
+
             foreach (var v in orderItems)
             {
-                int vkey = int.Parse(v["TableID"].ToString());
+                var pv = new Dictionary<string, object>(v);
+                int vkey = int.Parse(pv["TableID"].ToString());
 
                 // Check if the table ID already exists in the dictionary
                 if (!tables.ContainsKey(vkey))
                 {
                     // If not, add a new entry with the current item
-                    tables.Add(vkey, new List<Dictionary<string, object>> { v });
+                    tables.Add(vkey, new List<Dictionary<string, object>> { pv });
                 }
                 else
                 {
                     // If the table already exists, check if the item (by "Bezeichnung") is already in the list
                     var existingItem = tables[vkey].FirstOrDefault(item =>
-                        item["Bezeichnung"].ToString() == v["Bezeichnung"].ToString());
+                        item["Bezeichnung"].ToString() == pv["Bezeichnung"].ToString());
 
                     if (existingItem != null)
                     {
                         // If the item exists, increment its "Amount" value
                         int currentAmount = int.Parse(existingItem["Amount"].ToString());
-                        int newAmount = currentAmount + int.Parse(v["Amount"].ToString());
+                        int newAmount = currentAmount + int.Parse(pv["Amount"].ToString());
                         existingItem["Amount"] = newAmount; // Update the value in the dictionary
                     }
                     else
                     {
                         // If the item does not exist, add it to the list
-                        tables[vkey].Add(v);
+                        tables[vkey].Add(pv);
                     }
                 }
             }
