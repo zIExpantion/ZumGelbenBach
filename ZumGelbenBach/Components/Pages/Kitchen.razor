@@ -331,15 +331,6 @@
 
 
 
-
-
-
-
-
-
-
-
-
     protected override async Task OnInitializedAsync()
     {
         //Authorize
@@ -352,8 +343,6 @@
         else{
             manager.NavigateTo("/login");
         }
-
-
     }
 
 
@@ -423,7 +412,7 @@
                     Products.Add(v["Bezeichnung"].ToString(), 1);
                 }
                 else{
-                    Products[v["Bezeichnung"].ToString()] = Products[v["Bezeichnung"].ToString()] + 1;
+                    Products[v["Bezeichnung"].ToString()] = Products[v["Bezeichnung"].ToString()] + Products[v["Amount"].ToString()];
                 }
             }
         }
