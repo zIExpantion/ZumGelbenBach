@@ -252,6 +252,7 @@ namespace ZumGelbenBach
             {
                 cmd.CommandText = commString;
                 await cmd.ExecuteNonQueryAsync();
+                //cmd.ExecuteNonQuery();
             }
             catch (SqliteException sqlEx)
             {
@@ -345,6 +346,10 @@ namespace ZumGelbenBach
             
             cmd.ExecuteNonQuery();
         }
+
+
+
+
 
     }
 

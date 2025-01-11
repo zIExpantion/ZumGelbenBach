@@ -81,7 +81,14 @@
                     <h4 style="margin: 0;">@item["Bezeichnung"].ToString()</h4>
                     <p style="text-align: right; margin: 0;"><b>@item["Preis"] €</b></p>
                 </div>
-                <p style="font-style:italic;">&nbsp;&nbsp;&nbsp;&nbsp; @item["Beschreibung"].ToString()</p>
+                <div class="divinner">
+                    <p style="font-style:italic;">&nbsp;&nbsp;&nbsp;&nbsp; @item["Beschreibung"].ToString()</p>
+                    @if(!(@item["kcal"].ToString() == "0"))
+                    {
+                        <p style="text-align: right; vertical-align:top; font-size: small;">@item["kcal"] kalc</p>
+                    }
+                </div>
+                
             </div>
 
             <div class="divleft">
@@ -140,7 +147,7 @@ else
     {
         try
         {
-            var reader = db.ReadMenuWithImages("Menue", new[] { "Menue_ID", "Bezeichnung", "Beschreibung", "Preis", "Größe", "Images.Photo" }, "Image", "Images", "ImgID");
+            var reader = db.ReadMenuWithImages("Menue", new[] { "Menue_ID", "Bezeichnung", "Beschreibung", "Preis", "Größe", "Images.Photo", "kcal" }, "Image", "Images", "ImgID");
             menuItems.Clear();
 
             while (reader.Read())
@@ -159,7 +166,8 @@ else
                     { "Preis", reader["Preis"] },
                     { "Größe", reader["Größe"] },
                     { "Image", base64Image },
-                    {"Menue_ID", reader["Menue_ID"]}
+                    {"Menue_ID", reader["Menue_ID"]},
+                    {"kcal", reader["kcal"]}
                 };
 
                 // Setze Preis auf 2 Nachkommastellen

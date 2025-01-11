@@ -151,6 +151,8 @@ else
     {
         try
         {
+            var tasks = new List<Task>();
+
             foreach (var item in menuItemStates.Values.Where(x => x.IsSelected))
             {
                 var values = new List<string>
@@ -162,11 +164,16 @@ else
                 item.sProduktName
             };
 
-                await dB.SaveDataAsync("Orders",
-                                    new[] { "TableNumber", "Product", "AdditionalInfo", "Amount", "ProductName" },
-                                    values,
-                                    new List<int> { 1, 2, 1, 2, 1 });
+                // Add each SaveDataAsync call to the task list
+                tasks.Add(dB.SaveDataAsync("Orders",
+                                            new[] { "TableNumber", "Product", "AdditionalInfo", "Amount", "ProductName" },
+                                            values,
+                                            new List<int> { 1, 2, 1, 2, 1 }));
             }
+
+            // Wait for all the tasks to complete in parallel
+            await Task.WhenAll(tasks);
+
             await JSRuntime.InvokeVoidAsync("confirm", "Bestellung abgesendet");
             ClearFields();
         }
