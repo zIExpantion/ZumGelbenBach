@@ -10,9 +10,17 @@
 <PageTitle>Küchenansicht</PageTitle>
 
 <style>
-
     html, body {
-        overflow-y: scroll; /* Always show vertical scrollbar */
+        margin: 0;
+        padding: 0;
+        overflow: hidden; /* Prevent page-level scrolling */
+        height: 100vh; /* Ensure the body takes the full viewport height */
+    }
+
+    .page-container {
+        display: flex;
+        flex-direction: column;
+        height: 100%; /* Full height of the viewport */
     }
 
     .headline {
@@ -80,7 +88,7 @@
     color: #333;
     border: 1px solid #ccc;
     border-radius: 5px;
-    background-color: #f9f9f9;
+    background-color: navajowhite;
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
@@ -120,119 +128,170 @@
     width: 33%; /* Distribute columns evenly */
     }
 
+
+    .scrollable-content {
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+        height: calc(100vh - 350px); /* Adjust based on your header/footer height */
+        overflow-y: auto; /* Enable scrolling only for this element */
+        padding: 10px;
+        background-color: #f8f9fa; /* Optional background for clarity */
+        box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1); /* Optional shadow */
+        gap: 10px; /* Add spacing between child elements */
+        background-color: #a9a9a9;
+
+        
+    }
+
+    .page-container {
+        display: flex;
+        flex-direction: column;
+        height: 80%; /* Full height of the viewport */
+    }
+
+    /* Custom Scrollbar Style */
+    .scrollable-content::-webkit-scrollbar {
+        width: 12px; /* Width of the scrollbar */
+    }
+
+    .scrollable-content::-webkit-scrollbar-track {
+        background: #eaeaea; /* Background of the scrollbar track */
+        border-radius: 10px; /* Rounded corners for the track */
+    }
+
+    .scrollable-content::-webkit-scrollbar-thumb {
+        background-color: #555; /* Color of the scrollbar thumb */
+        border-radius: 10px; /* Rounded corners for the thumb */
+        border: 3px solid #eaeaea; /* Adds spacing around the thumb */
+    }
+
+        .scrollable-content::-webkit-scrollbar-thumb:hover {
+            background-color: #333; /* Darker thumb color on hover */
+        }
+
+    /* For Firefox */
+    .scrollable-content {
+        scrollbar-width: thin; /* Makes the scrollbar thinner */
+        scrollbar-color: #555 #eaeaea; /* Thumb color and track color */
+    }
+
 </style>
 
-<!-- HEADER -->
-<div class="menu-item divbox">
-    <div class="divleft">
-        <h1 class="headline"> Kitchen </h1>
+<div class="page-container">
+    <!-- HEADER -->
+    <div class="menu-item divbox">
+        <div class="divleft">
+            <h1 class="headline"> Kitchen </h1>
+        </div>
+        <div class="divright">
+            <label for="contentSelector">Ansicht:</label>
+            <select name="contentSelector" id="contentSelector" @bind="SelectedOption">
+                <option value="normal">Normal</option>
+                <option value="byProduct">bei Produkt</option>
+                <option value="byTable">bei Tisch</option>
+            </select>
+        </div>
     </div>
-    <div class="divright">
-        <label for="contentSelector">Ansicht:</label>
-        <select name="contentSelector" id="contentSelector" @bind="SelectedOption">
-            <option value="normal">Normal</option>
-            <option value="byProduct">bei Produkt</option>
-            <option value="byTable">bei Tisch</option>
-        </select>
-    </div>
-</div>
 
-<br />
+    <br />
 
-<!-- SubArea -->
-<div>
-    @if (SelectedOption == "normal")
-    {
-        @foreach (var item in orderItems)
+    <!-- SubArea -->
+    <div class="scrollable-content">
+        @if (SelectedOption == "normal")
         {
-            var itemId = item["ID"].ToString();
-            <div>
-                <div class="menu-item divbox">
-                    <div class="divleft">
-                        <h5>@item["Bezeichnung"].ToString()</h5>
-
-                    </div>
-                    <div class="divright">
-                        <button class="btn btn-danger btnDone" @onclick="() => accomplishOrder(item)">Erledigt</button>
-                    </div>
-                </div>
-
-                <div>
-                    <table style="width:100%;">
-                        <tr style="border:inset; border-collapse:collapse;">
-                            <td style="border:inset; border-collapse:collapse; vertical-align: top;">
-                                <p class="pitem">Anzahl: @item["Amount"].ToString()</p>
-                            </td>
-                            <td style="border:inset; border-collapse:collapse; vertical-align: top;">
-                                <p class="pitem">Zusatzinfo: @item["AdditionalInfo"].ToString()</p>
-                            </td>
-                            <td>
-                                <p class="pitem">Tischnummer: @item["TableID"].ToString()</p>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-
-                <hr style="margin: 0px 10; margin-bottom: 0px; border: none; border-bottom: 1px solid #ddd;" />
-            </div>
-        }
-    }
-
-    @if (SelectedOption == "byProduct")
-    {
-        @foreach(var item in Products)
-        {
-            <div class="menu-item divbox">
-                <div class="divleft">
-                    <p> @item.Key.ToString() </p>
-                </div>
-                <div class="divright">
-                    <p> @item.Value.ToString() </p>
-                </div>
-            </div>
-            <hr style="margin: 5px 0; border: none; border-bottom: 1px solid #ddd;" />
-        }
-    }
-
-    @if (SelectedOption == "byTable")
-    {
-        @foreach(var table in tables)
-        {
-            <h3>@table.Key</h3>
-            <div class="menu-item divbox">
-                <div class="divleft">
-                    <p><b>Product</b></p>
-                </div>
-                <div class="divright">
-                    <p><b>Anzahl</b></p>
-                </div>
-            </div>
-
-            @foreach(var item in table.Value)
+            @foreach (var item in orderItems)
             {
+                var itemId = item["ID"].ToString();
+                <div>
+                    <div class="menu-item divbox">
+                        <div class="divleft">
+                            <h5>@item["Bezeichnung"].ToString()</h5>
 
+                        </div>
+                        <div class="divright">
+                            <button class="btn btn-danger btnDone" @onclick="() => accomplishOrder(item)">Erledigt</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <table style="width:100%;">
+                            <tr style="border:inset; border-collapse:collapse;">
+                                <td style="border:inset; border-collapse:collapse; vertical-align: top;">
+                                    <p class="pitem">Anzahl: @item["Amount"].ToString()</p>
+                                </td>
+                                <td style="border:inset; border-collapse:collapse; vertical-align: top;">
+                                    <p class="pitem">Zusatzinfo: @item["AdditionalInfo"].ToString()</p>
+                                </td>
+                                <td>
+                                    <p class="pitem">Tischnummer: @item["TableID"].ToString()</p>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <hr style="margin: 0px 10; margin-bottom: 0px; border: none; border-bottom: 1px solid #ddd;" />
+                </div>
+            }
+        }
+
+        @if (SelectedOption == "byProduct")
+        {
+            @foreach(var item in Products)
+            {
                 <div class="menu-item divbox">
                     <div class="divleft">
-                        <p>@item["Bezeichnung"]</p>
-
+                        <p> @item.Key.ToString() </p>
                     </div>
                     <div class="divright">
-                        <p>@item["Amount"]</p>
+                        <p> @item.Value.ToString() </p>
+                    </div>
+                </div>
+                <hr style="margin: 5px 0; border: none; border-bottom: 1px solid #ddd;" />
+            }
+        }
+
+        @if (SelectedOption == "byTable")
+        {
+            @foreach(var table in tables)
+            {
+                <h3>@table.Key</h3>
+                <div class="menu-item divbox">
+                    <div class="divleft">
+                        <p><b>Product</b></p>
+                    </div>
+                    <div class="divright">
+                        <p><b>Anzahl</b></p>
+                    </div>
+                </div>
+
+                @foreach(var item in table.Value)
+                {
+
+                    <div class="menu-item divbox">
+                        <div class="divleft">
+                            <p>@item["Bezeichnung"]</p>
+
+                        </div>
+                        <div class="divright">
+                            <p>@item["Amount"]</p>
+
+                        </div>
 
                     </div>
 
-                </div>
-
-                // @foreach (var kvp in item)
-                // {
-                //     <p>@kvp.Key: @kvp.Value</p>
-            // }
+                    // @foreach (var kvp in item)
+                    // {
+                    //     <p>@kvp.Key: @kvp.Value</p>
+                // }
+                }
+                <hr />
             }
-            <hr />
         }
-    }
+    </div>
 </div>
-
 
 
 
