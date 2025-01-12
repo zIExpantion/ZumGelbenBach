@@ -310,13 +310,14 @@ else
             // Verwende await, um auf das Task-Ergebnis zuzugreifen
             using (var reader = await db.ExecuteCommandAsync(sqlQuery))
             {
+                //Schleife produkte laden und wenn keine kcal vorhanden sind, dann api aufrufen
                 while (reader != null && reader.Read())
                 {
                     string bezeichnung = reader["Bezeichnung"]?.ToString() ?? string.Empty;
                     int id = reader["Menue_ID"] != DBNull.Value ? Convert.ToInt32(reader["Menue_ID"]) : 0;
                     object kcalValue = reader["kcal"];
 
-                    if (kcalValue == DBNull.Value || string.IsNullOrWhiteSpace(kcalValue.ToString())||kcalValue.ToString() == "0")
+                    if (kcalValue == DBNull.Value || string.IsNullOrWhiteSpace(kcalValue.ToString()))// || kcalValue.ToString() == "0") wenn 0 keine daten gefunden
                     {
                         await CallAPI(bezeichnung, id);
                     }
@@ -348,7 +349,7 @@ else
             // Verwende den übergebenen foodName, falls nötig
             var apiUrl = $"https://trackapi.nutritionix.com/v2/search/instant?query={Uri.EscapeDataString(foodName)}";
 
-            Console.WriteLine($"API URL: {apiUrl}");  // Überprüfen, ob die URL richtig ist
+            //Console.WriteLine($"API URL: {apiUrl}");  // Überprüfen, ob die URL richtig ist
 
             // HttpClient einrichten und Header setzen
             using (var httpClient = new HttpClient())

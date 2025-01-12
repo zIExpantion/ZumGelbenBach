@@ -29,7 +29,29 @@ namespace ZumGelbenBach
 
         private SqliteConnection OpenConnection(string dbPath)
         {
-            SqliteConnection conn;
+           var conn = new SqliteConnection($"Data Source={dbPath};");
+
+            try
+            {
+                conn.Open();
+
+                // WAL-Modus aktivieren (für besseren gleichzeitigen Zugriff)
+                using (var cmd = new SqliteCommand("PRAGMA journal_mode=WAL;", conn))
+                {
+                    cmd.ExecuteNonQuery(); // Setzt den WAL-Modus
+                }
+
+                Console.WriteLine("WAL-Modus aktiviert.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fehler beim Öffnen der Datenbankverbindung: " + ex.Message);
+            }
+
+            return conn;
+        }
+        /*
+                     SqliteConnection conn;
             
             String connString = String.Format("Data Source={0}", dbPath);
             conn = new SqliteConnection(connString);
@@ -44,7 +66,7 @@ namespace ZumGelbenBach
             }
 
             return conn;
-        }
+         */
 
         public void CloseConnection(SqliteConnection conn)
         {
@@ -174,24 +196,37 @@ namespace ZumGelbenBach
         {
             try
             {
-                var cmd = new SqliteCommand(sqlCommand, conn); // Do not use 'using' here
                 if (sqlCommand.Trim().StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))
                 {
-                    return await cmd.ExecuteReaderAsync(); // Return the reader directly
+                    using (var cmd = new SqliteCommand(sqlCommand, conn))
+                    {
+                        return await cmd.ExecuteReaderAsync();
+                    }
                 }
                 else
                 {
-                    await cmd.ExecuteNonQueryAsync();
-                    cmd.Dispose(); // Explicitly dispose for non-SELECT queries
+                    using (var transaction = conn.BeginTransaction())
+                    {
+                        using (var cmd = new SqliteCommand(sqlCommand, conn))
+                        {
+                            cmd.Transaction = transaction;
+                            await cmd.ExecuteNonQueryAsync();
+                            transaction.Commit();
+                        }
+                    }
+                    Console.WriteLine("Befehl wurde ausgeführt ");
+
                     return null;
+                    
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Fehler in Methode: {new StackTrace().GetFrame(0).GetMethod().Name}" + $" Fehlermeldung: {ex.Message}");
+                Console.WriteLine($"Fehler in ExecuteCommandAsync: {ex.Message}");
                 return null;
             }
         }
+
 
 
 

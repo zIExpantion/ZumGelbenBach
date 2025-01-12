@@ -1,5 +1,6 @@
 ﻿@page "/warenkorb"
 @rendermode InteractiveServer
+@using System.Text
 @using ZumGelbenBach;
 @using ZumGelbenBach.Components.Models
 @inject SessionDataService sdS
@@ -151,6 +152,45 @@ else
     {
         try
         {
+            // Verwende StringBuilder, um eine einzige SQL-Abfrage zu erstellen
+            var sqlCommand = new StringBuilder();
+            sqlCommand.Append("INSERT INTO Orders (TableNumber, Product, AdditionalInfo, Amount, ProductName) VALUES ");
+
+            // Baue die Werte für jedes Element zusammen
+            var values = new List<string>();
+            foreach (var item in menuItemStates.Values.Where(x => x.IsSelected))
+            {
+                // Sichern der Eingabedaten mit den richtigen Formatierungen (Achten Sie darauf, Strings korrekt zu escapen)
+                var value = $"({tableID}, {item.dbID}, '{item.sProdukt}', {item.Quantity}, '{item.sProduktName}')";
+                values.Add(value);
+            }
+
+            // Füge alle Werte zur SQL-Anweisung hinzu, getrennt durch ein Komma
+            sqlCommand.Append(string.Join(",", values));
+
+            // Überprüfe, ob tatsächlich Werte vorhanden sind, bevor die Abfrage ausgeführt wird
+            if (values.Count > 0)
+            {
+                // Führe die gesamte Abfrage aus
+                await dB.ExecuteCommandAsync(sqlCommand.ToString());
+
+                await JSRuntime.InvokeVoidAsync("confirm", "Bestellung abgesendet");
+                ClearFields();
+            }
+            else
+            {
+                Console.WriteLine("No items to insert.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+
+    }
+    /*
+        try
+        {
             var tasks = new List<Task>();
 
             foreach (var item in menuItemStates.Values.Where(x => x.IsSelected))
@@ -181,7 +221,7 @@ else
         {
             Console.WriteLine($"Error: {ex.Message}");
         }
-    }
+     */
 
     private void ClearFields()
     {
